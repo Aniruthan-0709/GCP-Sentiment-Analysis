@@ -1,7 +1,7 @@
 name: MLOps Sentiment Pipeline
 
 on:
-  workflow_dispatch:  # Manual trigger
+  workflow_dispatch:
 
 jobs:
   run-mlops-pipeline:
@@ -30,7 +30,7 @@ jobs:
       - name: 🔐 Setup GCP Key File from Secret
         run: |
           mkdir -p config
-          echo "${{ secrets.GCP_CREDENTIALS }}" > config/key.json
+          printf '%s' "${{ secrets.GCP_CREDENTIALS }}" > config/key.json
 
       - name: 📄 Step 1: Data Ingestion from GCS
         run: python Data_Pipeline/data_ingestion.py
