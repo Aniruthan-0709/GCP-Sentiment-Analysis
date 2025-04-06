@@ -38,7 +38,7 @@ jobs:
         mkdir -p ML_OPS_Sentiment_Analyser/Data
         mkdir -p ML_OPS_Sentiment_Analyser/models
         mkdir -p ML_OPS_Sentiment_Analyser/artifacts
-        mkdir -p ML_OPS_Sentiment_Analyser/mlruns  # ✅ Required for MLflow
+        mkdir -p ML_OPS_Sentiment_Analyser/mlflow_runs
 
     - name: Download Data from GCP
       run: python ML_OPS_Sentiment_Analyser/Data_fetch.py
@@ -77,4 +77,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: mlflow-logs
-        path: ML_OPS_Sentiment_Analyser/mlruns/
+        path: ML_OPS_Sentiment_Analyser/mlflow_runs/
