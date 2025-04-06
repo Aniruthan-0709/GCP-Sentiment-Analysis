@@ -1,0 +1,21 @@
+# Core
+pandas
+numpy
+tqdm
+python-dotenv
+gcsfs
+
+# Machine Learning & Preprocessing
+scikit-learn
+imbalanced-learn
+
+# TensorFlow for TFDV and stats
+tensorflow==2.15.0
+tensorflow-data-validation==1.14.0
+protobuf==3.20.*
+
+# Parquet & I/O
+pyarrow
+
+# Optional for typing/logs/debugging (used indirectly)
+matplotlib  # if visualizations/log plots are needed later
