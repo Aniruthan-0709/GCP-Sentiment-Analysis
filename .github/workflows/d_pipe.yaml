@@ -11,7 +11,7 @@ jobs:
       - name: 🔄 Checkout repository
         uses: actions/checkout@v3
         with:
-          persist-credentials: true  # required for pushing back to repo
+          persist-credentials: true  # Required to push changes
 
       - name: 🐍 Set up Python
         uses: actions/setup-python@v4
@@ -59,9 +59,9 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add Data_Pipeline/logs/
-          git add Data_Pipeline/validation/
-          git add Data_Pipeline/data/processed/
+          git add -f Data_Pipeline/logs/
+          git add -f Data_Pipeline/validation/
+          git add -f Data_Pipeline/data/processed/
 
           if git diff --cached --quiet; then
             echo "No changes to commit."
