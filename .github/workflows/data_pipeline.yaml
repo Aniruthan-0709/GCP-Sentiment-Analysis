@@ -31,9 +31,9 @@ jobs:
         shell: bash
         run: |
           mkdir -p config
-          cat <<EOF > config/key.json
-          ${{ secrets.GCP_CREDENTIALS }}
-          EOF
+          cat > config/key.json <<EOF
+${{ secrets.GCP_CREDENTIALS }}
+EOF
 
       - name: 📄 Step 1: Data Ingestion from GCS
         run: python Data_Pipeline/data_ingestion.py
