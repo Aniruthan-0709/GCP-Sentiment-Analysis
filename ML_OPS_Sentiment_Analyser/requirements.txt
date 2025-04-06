@@ -6,3 +6,4 @@ matplotlib
 shap
 mlflow
 numpy
+ipython
