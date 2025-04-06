@@ -33,7 +33,7 @@ jobs:
           echo "$GCP_CREDENTIALS" > /tmp/gcp-key.json
           echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-key.json" >> $GITHUB_ENV
 
-      - name: ⬇️ Data Ingestion
+      - name: ⬇️ Data Ingestion & DVC Hashing
         env:
           GCP_BUCKET: ${{ secrets.GCP_BUCKET }}
           SOURCE_BLOB: ${{ secrets.SOURCE_BLOB }}
@@ -71,6 +71,7 @@ jobs:
           git add -f Data_Pipeline/logs/
           git add -f Data_Pipeline/validation/
           git add -f Data_Pipeline/data/processed/
+          git add -f Data_Pipeline/dvc/
 
           if git diff --cached --quiet; then
             echo "No changes to commit."
