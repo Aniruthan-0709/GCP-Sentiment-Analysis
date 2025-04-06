@@ -1,9 +1,8 @@
-torch
 google-cloud-storage
-transformers
-mlflow
+pandas
 scikit-learn
-logging
-torchvision
-torchaudio
-torch
+joblib
+matplotlib
+shap
+mlflow
+numpy
