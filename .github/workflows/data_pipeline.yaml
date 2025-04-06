@@ -30,7 +30,7 @@ jobs:
       - name: 🔐 Setup GCP Key File from Secret
         run: |
           mkdir -p config
-          printf '%s' "${{ secrets.GCP_CREDENTIALS }}" > config/key.json
+          bash -c "echo '${{ secrets.GCP_CREDENTIALS }}' > config/key.json"
 
       - name: 📄 Step 1: Data Ingestion from GCS
         run: python Data_Pipeline/data_ingestion.py
