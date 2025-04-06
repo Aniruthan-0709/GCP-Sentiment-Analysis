@@ -62,7 +62,6 @@ jobs:
           GCP_PROCESSED_BLOB: ${{ secrets.GCP_PROCESSED_BLOB }}
         run: python Data_Pipeline/final_upload.py
 
-
       - name: 📥 Commit logs, reports, and processed data to GitHub
         run: |
           git config --global user.name "github-actions[bot]"
@@ -79,3 +78,10 @@ jobs:
             git commit -m "Auto-commit: Add logs, reports, and processed files from pipeline run"
             git push
           fi
+
+      - name: Trigger Model Pipeline
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          event-type: trigger-model-pipeline
