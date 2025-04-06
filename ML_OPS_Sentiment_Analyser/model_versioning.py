@@ -1,33 +1,58 @@
 import os
 import logging
 import shutil
+import re
+from google.cloud import storage
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[logging.FileHandler("model_versioning.log"), logging.StreamHandler()]
 )
+
 logging.info("Starting Model Versioning...")
 
-MODEL_DIR = "models"
-os.makedirs(MODEL_DIR, exist_ok=True)
-MODEL_FILE = os.path.join(MODEL_DIR, "naive_bayes_sentiment.pkl")
-version_file = os.path.join(MODEL_DIR, "model_version.txt")
+# ====================== GCP CONFIG ======================
+BUCKET_NAME = "mlops_dataset123"
+GCS_MODEL_FOLDER = "models/"
+LOCAL_MODEL_PATH = "ML_OPS_Sentiment_Analyser/models/naive_bayes_sentiment.pkl"
 
-if not os.path.exists(MODEL_FILE):
-    raise FileNotFoundError(f"{MODEL_FILE} not found. Cannot version.")
+# ====================== GCS Setup ======================
+client = storage.Client()
+bucket = client.bucket(BUCKET_NAME)
 
-if os.path.exists(version_file):
-    with open(version_file, "r") as f:
-        version = int(f.read().strip())
-else:
-    version = 0
+# List existing model versions in GCS
+blobs = list(bucket.list_blobs(prefix=GCS_MODEL_FOLDER))
 
-new_version = version + 1
-new_model_file = os.path.join(MODEL_DIR, f"naive_bayes_sentiment_v{new_version}.pkl")
-shutil.copy(MODEL_FILE, new_model_file)
+# Extract version numbers from filenames
+version_pattern = re.compile(r"naive_bayes_sentiment_v(\d+)\.pkl")
+existing_versions = []
 
+for blob in blobs:
+    match = version_pattern.search(blob.name)
+    if match:
+        existing_versions.append(int(match.group(1)))
+
+# Determine next version
+current_version = max(existing_versions) if existing_versions else 0
+new_version = current_version + 1
+
+# Create new versioned filename
+versioned_filename = f"naive_bayes_sentiment_v{new_version}.pkl"
+versioned_local_path = os.path.join("ML_OPS_Sentiment_Analyser", "models", versioned_filename)
+
+# Copy the base model to the versioned file
+shutil.copy(LOCAL_MODEL_PATH, versioned_local_path)
+logging.info(f"Created versioned model file: {versioned_filename}")
+
+# Upload to GCS
+blob = bucket.blob(os.path.join(GCS_MODEL_FOLDER, versioned_filename))
+blob.upload_from_filename(versioned_local_path)
+logging.info(f"Uploaded {versioned_filename} to GCS: gs://{BUCKET_NAME}/{GCS_MODEL_FOLDER}{versioned_filename}")
+
+# Update version tracker (optional)
+version_file = os.path.join("ML_OPS_Sentiment_Analyser", "models", "model_version.txt")
 with open(version_file, "w") as f:
     f.write(str(new_version))
 
-logging.info(f"Model version updated to v{new_version}. New model file: {new_model_file}")
+logging.info(f"Updated version file with v{new_version}")
