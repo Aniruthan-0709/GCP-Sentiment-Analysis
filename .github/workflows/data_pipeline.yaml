@@ -51,3 +51,12 @@ jobs:
           GCP_BUCKET: ${{ secrets.GCP_BUCKET }}
           GCP_PROCESSED_BLOB: ${{ secrets.GCP_PROCESSED_BLOB }}
         run: python Data_Pipeline/final_upload.py
+
+      - name: 📁 Upload Logs, Reports, and Processed Data
+        uses: actions/upload-artifact@v4
+        with:
+          name: mlops-artifacts
+          path: |
+            Data_Pipeline/logs/
+            Data_Pipeline/validation/
+            Data_Pipeline/data/processed/
