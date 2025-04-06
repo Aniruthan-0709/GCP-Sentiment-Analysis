@@ -27,10 +27,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: 🔐 Setup GCP Key File from Secret
+      - name: 🔐 Setup GCP Key File from Secret (multiline-safe)
+        shell: bash
         run: |
           mkdir -p config
-          bash -c "echo '${{ secrets.GCP_CREDENTIALS }}' > config/key.json"
+          cat <<EOF > config/key.json
+          ${{ secrets.GCP_CREDENTIALS }}
+          EOF
 
       - name: 📄 Step 1: Data Ingestion from GCS
         run: python Data_Pipeline/data_ingestion.py
