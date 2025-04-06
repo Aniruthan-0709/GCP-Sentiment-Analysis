@@ -2,8 +2,8 @@ import os
 from google.cloud import storage
 
 # ======================= GCP CONFIG =======================
-BUCKET_NAME = "mlops_dataset123"
-FILE_NAME = "data/raw/Sampled_Chunk.csv"
+BUCKET_NAME = os.environ.get("GCP_BUCKET")          # From GitHub secret
+FILE_NAME = os.environ.get("GCP_PROCESSED_BLOB")  
 LOCAL_DIR = "Data/"
 LOCAL_FILE_NAME = "Data.csv"
 LOCAL_FILE_PATH = os.path.join(LOCAL_DIR, LOCAL_FILE_NAME)
