@@ -1,0 +1,8 @@
+📊 Bias Detection Report
+========================================
+customer_id: Old Mean = 27820087.261, New Mean = 27820087.261, Drift = 0.00%
+product_parent: Old Mean = 497409491.007, New Mean = 497409491.007, Drift = 0.00%
+star_rating: Old Mean = 2.987, New Mean = 2.987, Drift = 0.00%
+helpful_votes: Old Mean = 0.964, New Mean = 0.964, Drift = 0.00%
+total_votes: Old Mean = 1.345, New Mean = 1.345, Drift = 0.00%
+product_category_encoded: Old Mean = 0.000, New Mean = 0.000, Drift = 0.00%
