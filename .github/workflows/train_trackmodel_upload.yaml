@@ -1,4 +1,4 @@
-name: Train, Track with MLflow, and Upload Sentiment Model
+name: Model Development Pipeline
 
 on:
   workflow_dispatch:
