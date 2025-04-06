@@ -39,6 +39,9 @@ jobs:
         mkdir -p ML_OPS_Sentiment_Analyser/mlruns
 
     - name: Download Data from GCP
+      env:
+        GCP_BUCKET: ${{ secrets.GCP_BUCKET }}
+        GCP_PROCESSED_BLOB: ${{ secrets.GCP_PROCESSED_BLOB }}
       run: python ML_OPS_Sentiment_Analyser/Data_fetch.py
 
     - name: Train the Model
