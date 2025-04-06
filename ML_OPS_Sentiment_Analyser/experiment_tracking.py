@@ -17,7 +17,7 @@ logging.info("Starting Experiment Tracking with MLflow...")
 
 # ========== Configs ==========
 TRACKING_URI = os.path.abspath("ML_OPS_Sentiment_Analyser/mlruns")
-ARTIFACT_URI = "gs://mlops-dataset123/mlruns/artifacts"
+ARTIFACT_URI = "gs://mlops_dataset123/mlruns/artifacts"
 EXPERIMENT_NAME = "Sentiment_Model_Experiments"
 
 # ========== Set Tracking URI ==========
