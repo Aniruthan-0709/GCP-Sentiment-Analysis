@@ -1,7 +1,7 @@
 name: MLOps Sentiment Pipeline
 
 on:
-  workflow_dispatch:  # You can manually trigger this
+  workflow_dispatch:  # Manual trigger
 
 jobs:
   run-mlops-pipeline:
@@ -44,7 +44,7 @@ jobs:
       - name: 🔍 Step 4: Detect Anomalies
         run: python Data_Pipeline/anomalies.py
 
-      - name: ⚖️  Step 5: Detect Bias
+      - name: ⚖️ Step 5: Detect Bias
         run: python Data_Pipeline/bias_detector.py
 
       - name: ☁️ Step 6: Upload Final CSV to GCS
