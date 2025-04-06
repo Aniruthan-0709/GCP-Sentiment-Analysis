@@ -1,4 +1,4 @@
-name: Data Pipeline
+name: MLOps Data Pipeline
 
 on:
   workflow_dispatch:
@@ -8,44 +8,44 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: 🔄 Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Python
+      - name: 🐍 Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
-      - name: Install dependencies
+      - name: 📦 Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r Data_Pipeline/requirements.txt
+          pip install -r requirements.txt
 
-      - name: Set up GCP service account key
+      - name: 🔐 Decode GCP service account key from base64
         run: |
           mkdir -p config
-          echo "${{ secrets.GCP_SERVICE_KEY }}" > config/key.json
+          echo "${{ secrets.GCP_SERVICE_KEY_BASE64 }}" | base64 -d > config/key.json
 
-      - name: Data Ingestion
+      - name: ⬇️ Data Ingestion
         env:
           GCP_BUCKET: ${{ secrets.GCP_BUCKET }}
           SOURCE_BLOB: ${{ secrets.SOURCE_BLOB }}
           GOOGLE_APPLICATION_CREDENTIALS: config/key.json
         run: python Data_Pipeline/data_ingestion.py
 
-      - name: Data Preprocessing
+      - name: ⚙️ Data Preprocessing
         run: python Data_Pipeline/data_preprocessing.py
 
-      - name: Schema Validation
+      - name: 🧬 Schema Validation
         run: python Data_Pipeline/schema_validator.py
 
-      - name: Anomaly Detection
+      - name: 🚨 Anomaly Detection
         run: python Data_Pipeline/anomalies.py
 
-      - name: Bias Detection
+      - name: 📊 Bias Detection
         run: python Data_Pipeline/bias_detector.py
 
-      - name: Upload Final Processed Data to GCP
+      - name: ☁️ Upload Final Processed Data to GCP
         env:
           GCP_BUCKET: ${{ secrets.GCP_BUCKET }}
           GCP_PROCESSED_BLOB: ${{ secrets.GCP_PROCESSED_BLOB }}
