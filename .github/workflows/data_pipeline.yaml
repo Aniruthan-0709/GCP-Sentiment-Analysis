@@ -1,4 +1,4 @@
-name: MLOps Data Pipeline
+name: Data Pipeline
 
 on:
   workflow_dispatch:
@@ -51,12 +51,3 @@ jobs:
           GCP_PROCESSED_BLOB: ${{ secrets.GCP_PROCESSED_BLOB }}
           GOOGLE_APPLICATION_CREDENTIALS: config/key.json
         run: python Data_Pipeline/final_upload.py
-
-      - name: 📁 Upload Logs and Outputs
-        uses: actions/upload-artifact@v3
-        with:
-          name: mlops-artifacts
-          path: |
-            Data_Pipeline/logs/
-            Data_Pipeline/validation/
-            Data_Pipeline/data/processed/
