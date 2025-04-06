@@ -38,7 +38,7 @@ jobs:
         mkdir -p ML_OPS_Sentiment_Analyser/Data
         mkdir -p ML_OPS_Sentiment_Analyser/models
         mkdir -p ML_OPS_Sentiment_Analyser/artifacts
-        mkdir -p ML_OPS_Sentiment_Analyser/mlflow_runs
+        mkdir -p ML_OPS_Sentiment_Analyser/mlruns
 
     - name: Download Data from GCP
       run: python ML_OPS_Sentiment_Analyser/Data_fetch.py
@@ -61,20 +61,20 @@ jobs:
     - name: Version the Model
       run: python ML_OPS_Sentiment_Analyser/model_versioning.py
 
-    - name: Track Experiment with MLflow
+    - name: Track Experiment with MLflow (GCP Artifact Storage)
       run: python ML_OPS_Sentiment_Analyser/experiment_tracking.py
 
-    - name: Upload Model to GCP
+    - name: Upload Trained Model to GCP
       run: python ML_OPS_Sentiment_Analyser/Model_to_cloud.py
 
-    - name: Upload Model Artifacts
+    - name: Upload Trained Model Files
       uses: actions/upload-artifact@v4
       with:
         name: trained-model
         path: ML_OPS_Sentiment_Analyser/models/
 
-    - name: Upload MLflow Logs
+    - name: Upload MLflow Logs (Local Run Metadata)
       uses: actions/upload-artifact@v4
       with:
         name: mlflow-logs
-        path: ML_OPS_Sentiment_Analyser/mlflow_runs/
+        path: ML_OPS_Sentiment_Analyser/mlruns/
