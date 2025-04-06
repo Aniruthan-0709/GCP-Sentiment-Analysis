@@ -1,4 +1,3 @@
-
 name: Train, Track with MLflow, and Upload Sentiment Model
 
 on:
@@ -39,6 +38,7 @@ jobs:
         mkdir -p ML_OPS_Sentiment_Analyser/Data
         mkdir -p ML_OPS_Sentiment_Analyser/models
         mkdir -p ML_OPS_Sentiment_Analyser/artifacts
+        mkdir -p ML_OPS_Sentiment_Analyser/mlruns  # ✅ Required for MLflow
 
     - name: Download Data from GCP
       run: python ML_OPS_Sentiment_Analyser/Data_fetch.py
