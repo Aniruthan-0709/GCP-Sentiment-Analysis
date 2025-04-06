@@ -2,7 +2,6 @@ import os
 import logging
 from utils.gcs_utils import download_from_gcp
 
-# Setup logging
 BASE_DIR = os.path.dirname(__file__)
 LOG_DIR = os.path.join(BASE_DIR, "logs")
 os.makedirs(LOG_DIR, exist_ok=True)
@@ -16,9 +15,8 @@ logging.basicConfig(
     ]
 )
 
-# Environment variables (set via GitHub Actions)
 BUCKET_NAME = os.getenv("GCP_BUCKET")
-SOURCE_BLOB = os.getenv("SOURCE_BLOB")  # e.g. "raw/sample_reviews.csv"
+SOURCE_BLOB = os.getenv("SOURCE_BLOB")
 LOCAL_FILE_PATH = os.path.join(BASE_DIR, "data/raw/reviews.csv")
 
 def run_ingestion():
