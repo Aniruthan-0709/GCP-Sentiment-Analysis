@@ -57,6 +57,11 @@ jobs:
           GCP_PROCESSED_BLOB: ${{ secrets.GCP_PROCESSED_BLOB }}
         run: python Data_Pipeline/final_upload.py
 
+      - name: 🧪 Run Unit Tests
+        run: |
+          pip install pytest
+          pytest Data_Pipeline/unit_testing.py
+
       - name: 📥 Commit logs, reports, and processed data to GitHub
         run: |
           git config --global user.name "github-actions[bot]"
