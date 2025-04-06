@@ -1,0 +1,9 @@
+torch
+google-cloud-storage
+transformers
+mlflow
+scikit-learn
+logging
+torchvision
+torchaudio
+torch
