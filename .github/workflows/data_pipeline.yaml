@@ -1,4 +1,4 @@
-name: Data Pipeline
+name: MLOps Data Pipeline
 
 on:
   workflow_dispatch:
@@ -21,13 +21,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r Data_Pipeline/requirements.txt
 
-      - name: 🔐 Write GCP service account key
+      - name: 🔐 Write GCP Credentials from Secret
         env:
           GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
         run: |
-          mkdir -p config
-          echo "$GCP_CREDENTIALS" > config/key.json
-          echo "GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/config/key.json" >> $GITHUB_ENV
+          echo "$GCP_CREDENTIALS" > /tmp/gcp-key.json
+          echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-key.json" >> $GITHUB_ENV
 
       - name: ⬇️ Data Ingestion
         env:
