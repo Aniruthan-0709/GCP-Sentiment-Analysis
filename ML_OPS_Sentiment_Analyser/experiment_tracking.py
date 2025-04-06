@@ -2,7 +2,7 @@ import mlflow
 import logging
 import os
 
-# ========== Set up Logging ==========
+# ==================== Logging ====================
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
@@ -14,28 +14,33 @@ logging.basicConfig(
 
 logging.info("Starting Experiment Tracking with MLflow...")
 
-# ========== Fix: Use absolute path to avoid PermissionError ==========
-MLFLOW_DIR = os.path.abspath("ML_OPS_Sentiment_Analyser/mlruns")
-os.makedirs(MLFLOW_DIR, exist_ok=True)
+# ==================== Local MLflow Tracking ====================
+# Folder name changed to 'mlflow_runs'
+MLFLOW_TRACKING_DIR = os.path.abspath("ML_OPS_Sentiment_Analyser/mlflow_runs")
+os.makedirs(MLFLOW_TRACKING_DIR, exist_ok=True)
 
-# Set tracking URI to the absolute directory
-mlflow.set_tracking_uri(f"file://{MLFLOW_DIR}")
-mlflow.set_experiment("Sentiment_Model_Experiments")
+mlflow.set_tracking_uri(f"file://{MLFLOW_TRACKING_DIR}")
 
-# ========== Start the MLflow run ==========
+# ==================== Remote Artifact Storage ====================
+# GCS path to store MLflow artifacts
+GCS_ARTIFACT_PATH = "gs://mlops-dataset123/mlruns/artifacts"
+
+# Set experiment with GCS artifact path
+mlflow.set_experiment(
+    experiment_name="Sentiment_Model_Experiments",
+    artifact_location=GCS_ARTIFACT_PATH
+)
+
+# ==================== Start MLflow Run ====================
 with mlflow.start_run():
-    # Log hyperparameters
     mlflow.log_param("alpha", 1.0)
     mlflow.log_param("max_features", 5000)
-
-    # Log example metric
     mlflow.log_metric("accuracy", 0.85)
 
-    # Log model version if available
     version_file = os.path.join("ML_OPS_Sentiment_Analyser", "models", "model_version.txt")
     if os.path.exists(version_file):
         with open(version_file, "r") as f:
             model_version = f.read().strip()
         mlflow.log_param("model_version", model_version)
 
-    logging.info("Experiment tracked with MLflow.")
+    logging.info("MLflow experiment logged successfully.")
