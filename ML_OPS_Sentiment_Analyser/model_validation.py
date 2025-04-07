@@ -4,6 +4,7 @@ import os
 import joblib
 from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.model_selection import train_test_split
+from model_wrapper import SentimentModel
 
 # ========== Logging Setup ==========
 logging.basicConfig(
