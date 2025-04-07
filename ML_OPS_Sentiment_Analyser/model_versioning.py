@@ -15,7 +15,7 @@ logging.info("Starting Model Versioning...")
 # ====================== GCP CONFIG ======================
 BUCKET_NAME = "mlops_dataset123"
 GCS_MODEL_FOLDER = "models/"
-LOCAL_MODEL_PATH = "ML_OPS_Sentiment_Analyser/models/sentiment_analyzer_model.pkl"
+LOCAL_MODEL_PATH = "models/sentiment_analyzer_model.pkl"
 
 # ====================== GCS Setup ======================
 client = storage.Client()
