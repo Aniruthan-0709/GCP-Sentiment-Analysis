@@ -19,7 +19,7 @@ logging.info("Starting Sentiment Analysis Training with Naïve Bayes...")
 # ========== Config ==========
 DATA_PATH = "Data/Data.csv"
 MODEL_DIR = "models"
-MODEL_FILE = os.path.join(MODEL_DIR, "naive_bayes_sentiment_pipeline.pkl")
+MODEL_FILE = os.path.join(MODEL_DIR, "sentiment_analyzer_model.pkl")
 
 os.makedirs(MODEL_DIR, exist_ok=True)
 
