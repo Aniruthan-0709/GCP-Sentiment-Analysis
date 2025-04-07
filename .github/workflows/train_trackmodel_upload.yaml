@@ -49,23 +49,11 @@ jobs:
     - name: Train the Model
       run: python ML_OPS_Sentiment_Analyser/Model_training.py
 
-    - name: 🐞 Debug – Check for Model File
-      run: |
-        echo "Listing files in models directory..."
-        ls -lh ML_OPS_Sentiment_Analyser/models || echo "Model directory not found"
-        echo "Checking if pickle file exists..."
-        if [ -f ML_OPS_Sentiment_Analyser/models/naive_bayes_sentiment.pkl ]; then
-          echo "✅ Pickle file found."
-        else
-          echo "❌ Pickle file missing!"
-          exit 1
-        fi
+    - name: Hyperparameter Tuning
+      run: python ML_OPS_Sentiment_Analyser/hyperparameter_tuning.py
 
     - name: Validate the Model
       run: python ML_OPS_Sentiment_Analyser/model_validation.py
-
-    - name: Hyperparameter Tuning
-      run: python ML_OPS_Sentiment_Analyser/hyperparameter_tuning.py
 
     - name: Detect Model Bias
       run: python ML_OPS_Sentiment_Analyser/bias_detection.py
@@ -100,3 +88,5 @@ jobs:
         SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
         SMTP_RECEIVER: ${{ secrets.SMTP_RECEIVER }}
       run: python ML_OPS_Sentiment_Analyser/send_email.py
+
+
