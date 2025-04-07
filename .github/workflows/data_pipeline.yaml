@@ -69,7 +69,7 @@ jobs:
 
           git add -f Data_Pipeline/logs/
           git add -f Data_Pipeline/validation/
-          git add -f Data_Pipeline/data/processed/
+          #git add -f Data_Pipeline/data/processed/
           git add -f Data_Pipeline/dvc/
 
           if git diff --cached --quiet; then
