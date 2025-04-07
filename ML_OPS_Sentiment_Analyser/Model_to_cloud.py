@@ -1,9 +1,10 @@
 import os
 from google.cloud import storage
 
+# ===== Update file name to match new pipeline file =====
 BUCKET_NAME = "mlops_dataset123"
-LOCAL_MODEL_PATH = "models/naive_bayes_sentiment.pkl"
-GCS_MODEL_PATH = "models/naive_bayes_sentiment.pkl"
+LOCAL_MODEL_PATH = "models/naive_bayes_sentiment_pipeline.pkl"
+GCS_MODEL_PATH = "models/naive_bayes_sentiment_pipeline.pkl"
 
 def upload_to_gcp(bucket_name, source_file_name, destination_blob_name):
     if not os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
