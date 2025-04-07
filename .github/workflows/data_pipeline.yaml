@@ -79,6 +79,13 @@ jobs:
             git push
           fi
 
+      - name: Send Success Email via Gmail SMTP
+        env:
+          SMTP_SENDER: ${{ secrets.SMTP_SENDER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_RECEIVER: ${{ secrets.SMTP_RECEIVER }}
+        run: python Data_Pipeline/send_email.py
+        
       - name: Trigger Model Pipeline
         uses: peter-evans/repository-dispatch@v3
         with:
