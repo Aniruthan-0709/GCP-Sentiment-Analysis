@@ -1,10 +1,9 @@
 import pandas as pd
 import logging
 import os
-import joblib
+import pickle
 from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.model_selection import train_test_split
-from model_wrapper import SentimentModel
 
 # ========== Logging Setup ==========
 logging.basicConfig(
@@ -17,14 +16,15 @@ logging.basicConfig(
 )
 logging.info("Starting Model Validation...")
 
-# ========== Load Wrapped Model ==========
+# ========== Load Pickled Pipeline ==========
 MODEL_DIR = "models"
-MODEL_FILE = os.path.join(MODEL_DIR, "naive_bayes_sentiment.pkl")
+MODEL_FILE = os.path.join(MODEL_DIR, "naive_bayes_sentiment_pipeline.pkl")
 
 if not os.path.exists(MODEL_FILE):
-    raise FileNotFoundError("Wrapped model file not found.")
+    raise FileNotFoundError("Pipeline model file not found.")
 
-model_wrapper = joblib.load(MODEL_FILE)
+with open(MODEL_FILE, "rb") as f:
+    model_pipeline = pickle.load(f)
 
 # ========== Load and Prepare Data ==========
 DATA_PATH = os.path.join("Data", "Data.csv")
@@ -59,11 +59,9 @@ _, X_test, _, y_test = train_test_split(
     balanced_df["review_body"], balanced_df["label"], test_size=0.2, random_state=42
 )
 
-# ========== Transform and Predict ==========
-X_test_tfidf = model_wrapper.vectorizer.transform(X_test)
-y_pred = model_wrapper.model.predict(X_test_tfidf)
+# ========== Predict and Evaluate ==========
+y_pred = model_pipeline.predict(X_test)
 
-# ========== Evaluate ==========
 accuracy = accuracy_score(y_test, y_pred)
 cm = confusion_matrix(y_test, y_pred)
 
