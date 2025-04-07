@@ -4,6 +4,7 @@ import os
 import joblib
 import shap
 import matplotlib.pyplot as plt
+from model_wrapper import SentimentModel
 
 # ========== Logging ==========
 logging.basicConfig(
