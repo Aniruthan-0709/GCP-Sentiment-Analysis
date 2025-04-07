@@ -1,10 +1,9 @@
 import pandas as pd
 import logging
 import os
-import joblib
+import pickle
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
-from model_wrapper import SentimentModel
 
 # ========== Logging ==========
 logging.basicConfig(
@@ -14,14 +13,15 @@ logging.basicConfig(
 )
 logging.info("Starting Bias Detection...")
 
-# ========== Load Wrapped Model ==========
+# ========== Load Pickled Pipeline ==========
 MODEL_DIR = "models"
-MODEL_FILE = os.path.join(MODEL_DIR, "naive_bayes_sentiment.pkl")
+MODEL_FILE = os.path.join(MODEL_DIR, "naive_bayes_sentiment_pipeline.pkl")
 
 if not os.path.exists(MODEL_FILE):
-    raise FileNotFoundError("Wrapped model file not found.")
+    raise FileNotFoundError("Pipeline model file not found.")
 
-model_wrapper = joblib.load(MODEL_FILE)
+with open(MODEL_FILE, "rb") as f:
+    model_pipeline = pickle.load(f)
 
 # ========== Load Data ==========
 df = pd.read_csv("Data/Data.csv")
@@ -60,9 +60,8 @@ median_length = review_lengths.median()
 short_idx = review_lengths <= median_length
 long_idx = review_lengths > median_length
 
-# ========== Transform and Predict ==========
-X_test_tfidf = model_wrapper.vectorizer.transform(X_test)
-y_pred = model_wrapper.model.predict(X_test_tfidf)
+# ========== Predict ==========
+y_pred = model_pipeline.predict(X_test)
 
 # ========== Evaluate Bias ==========
 accuracy_short = accuracy_score(y_test[short_idx], y_pred[short_idx])
