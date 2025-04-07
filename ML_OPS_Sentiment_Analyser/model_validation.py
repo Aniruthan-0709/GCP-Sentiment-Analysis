@@ -18,7 +18,7 @@ logging.info("Starting Model Validation...")
 
 # ========== Load Pickled Pipeline ==========
 MODEL_DIR = "models"
-MODEL_FILE = os.path.join(MODEL_DIR, "naive_bayes_sentiment_pipeline.pkl")
+MODEL_FILE = os.path.join(MODEL_DIR, "sentiment_analyzer_model.pkl")
 
 if not os.path.exists(MODEL_FILE):
     raise FileNotFoundError("Pipeline model file not found.")
