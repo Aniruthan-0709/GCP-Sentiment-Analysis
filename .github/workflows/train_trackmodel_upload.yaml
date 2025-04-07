@@ -81,3 +81,10 @@ jobs:
       with:
         name: mlflow-logs
         path: ML_OPS_Sentiment_Analyser/mlruns/
+
+    - name: 📧 Send Success Email via Gmail SMTP
+      env:
+        SMTP_SENDER: ${{ secrets.SMTP_SENDER }}
+        SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+        SMTP_RECEIVER: ${{ secrets.SMTP_RECEIVER }}
+      run: python ML_OPS_Sentiment_Analyser/send_email.py
