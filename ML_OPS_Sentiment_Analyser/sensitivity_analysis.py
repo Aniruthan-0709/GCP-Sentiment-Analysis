@@ -1,10 +1,9 @@
 import pandas as pd
 import logging
 import os
-import joblib
+import pickle
 import shap
 import matplotlib.pyplot as plt
-from model_wrapper import SentimentModel
 
 # ========== Logging ==========
 logging.basicConfig(
@@ -17,14 +16,19 @@ logging.basicConfig(
 )
 logging.info("Starting Sensitivity Analysis using SHAP...")
 
-# ========== Load Wrapped Model ==========
+# ========== Load Pickled Pipeline ==========
 MODEL_DIR = "models"
-MODEL_FILE = os.path.join(MODEL_DIR, "naive_bayes_sentiment.pkl")
+MODEL_FILE = os.path.join(MODEL_DIR, "naive_bayes_sentiment_pipeline.pkl")
 
 if not os.path.exists(MODEL_FILE):
-    raise FileNotFoundError("Wrapped model file not found.")
+    raise FileNotFoundError("Pipeline model file not found.")
 
-model_wrapper = joblib.load(MODEL_FILE)
+with open(MODEL_FILE, "rb") as f:
+    model_pipeline = pickle.load(f)
+
+# Extract vectorizer and model from pipeline
+vectorizer = model_pipeline.named_steps["tfidf"]
+model = model_pipeline.named_steps["nb"]
 
 # ========== Load and Prepare Data ==========
 df = pd.read_csv("Data/Data.csv")
@@ -44,21 +48,21 @@ df["review_body"] = df["review_body"].astype(str)
 # ========== Sample Data ==========
 sample_df = df.sample(n=5, random_state=42)
 texts = sample_df["review_body"].tolist()
-X_sample = model_wrapper.vectorizer.transform(texts)
+X_sample = vectorizer.transform(texts)
 
 # ========== SHAP Explanation ==========
 shap.initjs()
 
 # KernelExplainer for scikit-learn Naive Bayes
-explainer = shap.Explainer(model_wrapper.model.predict_proba, X_sample.toarray())
+explainer = shap.Explainer(model.predict_proba, X_sample.toarray())
 shap_values = explainer(X_sample.toarray())
 
 # ========== Save SHAP Summary Plot ==========
 plt.figure()
 shap.summary_plot(
-    shap_values, 
-    X_sample.toarray(), 
-    feature_names=model_wrapper.vectorizer.get_feature_names_out(), 
+    shap_values,
+    X_sample.toarray(),
+    feature_names=vectorizer.get_feature_names_out(),
     show=False
 )
 
