@@ -5,7 +5,7 @@ import joblib
 from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.model_selection import train_test_split
 
-# ========== Logging ==========
+# ========== Logging Setup ==========
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
@@ -23,11 +23,11 @@ MODEL_FILE = os.path.join(MODEL_DIR, "naive_bayes_sentiment.pkl")
 if not os.path.exists(MODEL_FILE):
     raise FileNotFoundError("Wrapped model file not found.")
 
-model = joblib.load(MODEL_FILE)
+model_wrapper = joblib.load(MODEL_FILE)
 
 # ========== Load and Prepare Data ==========
-data_path = os.path.join("Data", "Data.csv")
-df = pd.read_csv(data_path)
+DATA_PATH = os.path.join("Data", "Data.csv")
+df = pd.read_csv(DATA_PATH)
 
 def map_sentiment(rating):
     if rating <= 2:
@@ -58,11 +58,13 @@ _, X_test, _, y_test = train_test_split(
     balanced_df["review_body"], balanced_df["label"], test_size=0.2, random_state=42
 )
 
-# ========== Predict with Wrapped Model ==========
-y_pred_labels = model.model.predict(model.vectorizer.transform(X_test))
-accuracy = accuracy_score(y_test, y_pred_labels)
-cm = confusion_matrix(y_test, y_pred_labels)
+# ========== Transform and Predict ==========
+X_test_tfidf = model_wrapper.vectorizer.transform(X_test)
+y_pred = model_wrapper.model.predict(X_test_tfidf)
 
-# ========== Log Results ==========
+# ========== Evaluate ==========
+accuracy = accuracy_score(y_test, y_pred)
+cm = confusion_matrix(y_test, y_pred)
+
 logging.info(f"Validation Accuracy: {accuracy:.4f}")
 logging.info(f"Confusion Matrix:\n{cm}")
