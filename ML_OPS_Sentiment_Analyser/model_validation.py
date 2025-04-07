@@ -4,25 +4,28 @@ import os
 import joblib
 from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import TfidfVectorizer
 
+# ========== Logging ==========
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[logging.FileHandler("model_validation.log"), logging.StreamHandler()]
+    handlers=[
+        logging.FileHandler("model_validation.log"),
+        logging.StreamHandler()
+    ]
 )
 logging.info("Starting Model Validation...")
 
+# ========== Load Wrapped Model ==========
 MODEL_DIR = "models"
 MODEL_FILE = os.path.join(MODEL_DIR, "naive_bayes_sentiment.pkl")
-VECTORIZER_FILE = os.path.join(MODEL_DIR, "tfidf_vectorizer.pkl")
 
-if not os.path.exists(MODEL_FILE) or not os.path.exists(VECTORIZER_FILE):
-    raise FileNotFoundError("Model or vectorizer not found.")
+if not os.path.exists(MODEL_FILE):
+    raise FileNotFoundError("Wrapped model file not found.")
 
 model = joblib.load(MODEL_FILE)
-vectorizer = joblib.load(VECTORIZER_FILE)
 
+# ========== Load and Prepare Data ==========
 data_path = os.path.join("Data", "Data.csv")
 df = pd.read_csv(data_path)
 
@@ -37,24 +40,29 @@ def map_sentiment(rating):
 df["label"] = df["star_rating"].apply(map_sentiment)
 df = df.dropna(subset=["review_body"])
 df["review_body"] = df["review_body"].astype(str)
+
 label_mapping = {"Negative": 0, "Neutral": 1, "Positive": 2}
 df["label"] = df["label"].map(label_mapping)
 
+# ========== Balance the Dataset ==========
 positive = df[df["label"] == 2]
 negative = df[df["label"] == 0]
 neutral = df[df["label"] == 1]
 negative_upsampled = negative.sample(len(positive), replace=True, random_state=42)
 neutral_upsampled = neutral.sample(len(positive), replace=True, random_state=42)
-balanced_df = pd.concat([positive, negative_upsampled, neutral_upsampled]).sample(frac=1, random_state=42)
+balanced_df = pd.concat([positive, negative_upsampled, neutral_upsampled])
+balanced_df = balanced_df.sample(frac=1, random_state=42).reset_index(drop=True)
 
+# ========== Split Test Set ==========
 _, X_test, _, y_test = train_test_split(
     balanced_df["review_body"], balanced_df["label"], test_size=0.2, random_state=42
 )
-X_test_tfidf = vectorizer.transform(X_test)
 
-y_pred = model.predict(X_test_tfidf)
-accuracy = accuracy_score(y_test, y_pred)
-cm = confusion_matrix(y_test, y_pred)
+# ========== Predict with Wrapped Model ==========
+y_pred_labels = model.model.predict(model.vectorizer.transform(X_test))
+accuracy = accuracy_score(y_test, y_pred_labels)
+cm = confusion_matrix(y_test, y_pred_labels)
 
+# ========== Log Results ==========
 logging.info(f"Validation Accuracy: {accuracy:.4f}")
 logging.info(f"Confusion Matrix:\n{cm}")
