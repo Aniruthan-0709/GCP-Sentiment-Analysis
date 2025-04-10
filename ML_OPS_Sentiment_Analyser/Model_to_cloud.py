@@ -18,4 +18,4 @@ def upload_to_gcp(bucket_name, source_file_name, destination_blob_name):
     blob.upload_from_filename(source_file_name)
     print(f"Uploaded {source_file_name} to gs://{bucket_name}/{destination_blob_name}")
 
-upload_to_gcp(BUCKET_NAME, LOCAL_MODEL_PATH, GCS_MODEL_PATH)
+#upload_to_gcp(BUCKET_NAME, LOCAL_MODEL_PATH, GCS_MODEL_PATH)
