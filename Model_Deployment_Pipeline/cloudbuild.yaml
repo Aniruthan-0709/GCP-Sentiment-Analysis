@@ -44,7 +44,7 @@ steps:
     args:
       - apply
       - '-f'
-      - data-drift-job.yaml
+      - data_drift_detector/data-drift-job.yaml
 
   # 🕐 Step 5: Wait for Drift Job Completion (Optional but Recommended)
   - name: gcr.io/cloud-builders/kubectl
