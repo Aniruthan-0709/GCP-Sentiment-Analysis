@@ -1,4 +1,4 @@
-# 🚀 MLOps Model Deployment GKE: Sentiment Analysis + Data Drift Detection
+# MLOps Model Deployment GKE: Sentiment Analysis + Data Drift Detection
 
 This repository contains two Dockerfiles to deploy a FastAPI-based sentiment analysis service and a data drift detection job on Google Kubernetes Engine (GKE).
 
