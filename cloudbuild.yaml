@@ -23,7 +23,19 @@ steps:
       - deployment
       - sentiment-analyzer
 
-  # 🚀 Step 3: Trigger Data Drift Detection Job
+  # 💣 Step 3: Delete Existing Drift Detection Job (if any)
+  - name: gcr.io/cloud-builders/kubectl
+    id: Delete Old Drift Job
+    env:
+      - CLOUDSDK_COMPUTE_ZONE=us-east1-b
+      - CLOUDSDK_CONTAINER_CLUSTER=sentiment-cluster
+    args:
+      - delete
+      - job
+      - data-drift-check
+      - --ignore-not-found
+
+  # 🚀 Step 4: Trigger Fresh Data Drift Detection Job
   - name: gcr.io/cloud-builders/kubectl
     id: Trigger Drift Detection
     env:
@@ -33,6 +45,18 @@ steps:
       - apply
       - '-f'
       - data-drift-job.yaml
+
+  # 🕐 Step 5: Wait for Drift Job Completion (Optional but Recommended)
+  - name: gcr.io/cloud-builders/kubectl
+    id: Wait for Drift Job Completion
+    env:
+      - CLOUDSDK_COMPUTE_ZONE=us-east1-b
+      - CLOUDSDK_CONTAINER_CLUSTER=sentiment-cluster
+    args:
+      - wait
+      - --for=condition=complete
+      - --timeout=180s
+      - job/data-drift-check
 
 options:
   logging: CLOUD_LOGGING_ONLY
