@@ -208,3 +208,8 @@
 2025-04-11 14:45:55,665 - INFO - ✅ CSV saved at: /home/runner/work/MLOPS-Sentiment-Analyzer-Project/MLOPS-Sentiment-Analyzer-Project/Data_Pipeline/data/processed/reviews.csv
 2025-04-11 14:45:55,665 - INFO - ☁️ Uploading /home/runner/work/MLOPS-Sentiment-Analyzer-Project/MLOPS-Sentiment-Analyzer-Project/Data_Pipeline/data/processed/reviews.csv to gs://mlops_dataset123/data/processed/reviews.csv
 2025-04-11 14:45:56,248 - INFO - ✅ Upload complete.
+2025-04-11 14:49:53,645 - INFO - 🔍 Checking for processed file at: /home/runner/work/MLOPS-Sentiment-Analyzer-Project/MLOPS-Sentiment-Analyzer-Project/Data_Pipeline/data/processed/reviews.parquet
+2025-04-11 14:49:53,645 - INFO - 🧪 Converting /home/runner/work/MLOPS-Sentiment-Analyzer-Project/MLOPS-Sentiment-Analyzer-Project/Data_Pipeline/data/processed/reviews.parquet to CSV...
+2025-04-11 14:49:53,761 - INFO - ✅ CSV saved at: /home/runner/work/MLOPS-Sentiment-Analyzer-Project/MLOPS-Sentiment-Analyzer-Project/Data_Pipeline/data/processed/reviews.csv
+2025-04-11 14:49:53,761 - INFO - ☁️ Uploading /home/runner/work/MLOPS-Sentiment-Analyzer-Project/MLOPS-Sentiment-Analyzer-Project/Data_Pipeline/data/processed/reviews.csv to gs://mlops_dataset123/data/processed/reviews.csv
+2025-04-11 14:49:54,265 - INFO - ✅ Upload complete.
