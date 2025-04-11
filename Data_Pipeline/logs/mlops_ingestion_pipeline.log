@@ -170,3 +170,6 @@
 2025-04-11 21:26:14,560 - INFO - ⬇️ Downloading from GCP: mlops_dataset123/data/raw/Sampled_Chunk.csv
 2025-04-11 21:26:14,918 - INFO - ✅ File downloaded to /home/runner/work/MLOPS-Sentiment-Analyzer-Project/MLOPS-Sentiment-Analyzer-Project/Data_Pipeline/data/raw/reviews.csv
 2025-04-11 21:26:14,922 - INFO - 📦 DVC-style hash written to /home/runner/work/MLOPS-Sentiment-Analyzer-Project/MLOPS-Sentiment-Analyzer-Project/Data_Pipeline/dvc/hash_raw_reviews_20250411_212614.txt
+2025-04-11 21:30:14,266 - INFO - ⬇️ Downloading from GCP: mlops_dataset123/data/raw/Sampled_Chunk.csv
+2025-04-11 21:30:14,592 - INFO - ✅ File downloaded to /home/runner/work/MLOPS-Sentiment-Analyzer-Project/MLOPS-Sentiment-Analyzer-Project/Data_Pipeline/data/raw/reviews.csv
+2025-04-11 21:30:14,597 - INFO - 📦 DVC-style hash written to /home/runner/work/MLOPS-Sentiment-Analyzer-Project/MLOPS-Sentiment-Analyzer-Project/Data_Pipeline/dvc/hash_raw_reviews_20250411_213014.txt
