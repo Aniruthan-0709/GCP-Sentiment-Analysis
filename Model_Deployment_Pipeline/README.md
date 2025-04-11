@@ -1,26 +1,45 @@
+# 🚀 MLOps Model Deployment GKE: Sentiment Analysis + Data Drift Detection
 
-# 🚀 MLOps on GKE using Prebuilt Docker Images
+This repository contains two Dockerfiles to deploy a FastAPI-based sentiment analysis service and a data drift detection job on Google Kubernetes Engine (GKE).
 
-This repo shows how to deploy a sentiment analysis web app and a data drift detection job on Google Kubernetes Engine (GKE), using **prebuilt Docker images** stored in Google Container Registry (GCR).
+---
+
+## 📦 Contents
+
+- `Dockerfile.deploy` → Sentiment analyzer app with UI
+- `Dockerfile.drift` → Data drift detection and GitHub trigger job
 
 ---
 
 ## 🧰 Prerequisites
 
-- GCP project with billing enabled
-- GKE cluster created (e.g., `sentiment-cluster`)
-- Required APIs enabled:
-  - Kubernetes Engine API
-  - Container Registry API
+Make sure you have the following:
+
+- ✅ A Google Cloud project with billing enabled
+- ✅ [Google Cloud SDK](https://cloud.google.com/sdk/docs/install) installed
+- ✅ Docker installed and authenticated with GCP
+- ✅ Kubernetes CLI (`kubectl`) installed
+- ✅ A service account JSON key with the following roles:
+  - Storage Admin
+  - BigQuery Data Viewer
+  - Kubernetes Engine Admin
+  - Artifact Registry Writer
 
 ---
 
-## 🔧 Deployment Steps
+## ⚙️ Step-by-Step Setup
 
-### 1. Authenticate with GCP & Configure
+### 🔑 1. Authenticate with Google Cloud
 
 ```bash
 gcloud auth login
-gcloud config set project <your-project-id>
+gcloud auth configure-docker
+gcloud config set project <YOUR_PROJECT_ID>
 gcloud config set compute/zone us-east1-b
+
+
+### 2. Create a GKE Cluster
+
+```bash
+gcloud container clusters create sentiment-cluster --num-nodes=1 --zone=us-east1-b
 gcloud container clusters get-credentials sentiment-cluster
