@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: data-drift-check
+  labels:
+    job-type: data-drift
+spec:
+  template:
+    spec:
+      containers:
+        - name: data-drift
+          image: gcr.io/mlops-project-test-448822/data-drift-detector:latest
+          env:
+            - name: GITHUB_PAT
+              valueFrom:
+                secretKeyRef:
+                  name: github-pat
+                  key: token
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /app/gcp_key.json
+          volumeMounts:
+            - name: gcp-creds
+              mountPath: /app/gcp_key.json
+              subPath: gcp_key.json
+      volumes:
+        - name: gcp-creds
+          secret:
+            secretName: gcp-key-secret
+      restartPolicy: Never
+  backoffLimit: 1
