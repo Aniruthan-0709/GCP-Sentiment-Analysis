@@ -32,7 +32,7 @@ steps:
     args:
       - apply
       - '-f'
-      - data_drift_detector/data-drift-job.yaml
+      - data-drift-job.yaml
 
 options:
   logging: CLOUD_LOGGING_ONLY
