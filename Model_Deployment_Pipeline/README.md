@@ -55,7 +55,6 @@ docker tag sentiment-analyzer-app gcr.io/<YOUR_PROJECT_ID>/sentiment-analyzer-ap
 docker push gcr.io/<YOUR_PROJECT_ID>/sentiment-analyzer-app
 ```
 
-
 #### Build and push data drift detector
 
 ```bash
@@ -64,4 +63,34 @@ docker tag data-drift-detector gcr.io/<YOUR_PROJECT_ID>/data-drift-detector
 docker push gcr.io/<YOUR_PROJECT_ID>/data-drift-detector
 ```
 
+### 🔐 4. Create Required Secrets in GKE
+
+```bash
+kubectl create secret generic gcp-key-secret --from-file=gcp_key.json=<path-to-your-service-account-key.json>
+
+kubectl create secret generic github-pat --from-literal=token=<YOUR_GITHUB_PAT>
+```
+
+### 📦 5. Deploy to GKE
+
+#### Deploy the sentiment analyzer (web app)
+
+```bash
+kubectl apply -f k8s.yaml
+```
+
+#### 🌐 6. Access the Web App
+Get the External Web address
+
+```bash
+kubectl get service sentiment-service
+```
+
+### 📊 7. Monitor Data Drift
+
+```bash
+kubectl get pods
+kubectl logs <data-drift-pod-name>
+
+```
 
