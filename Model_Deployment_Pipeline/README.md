@@ -39,7 +39,7 @@ gcloud config set compute/zone us-east1-b
 ```
 
 
-### 2. Create the necessary GCP resources 
+### ☁️ 2. Create the necessary GCP resources 
 
 ##### Create a GKE CLuster
 ```bash
@@ -85,12 +85,12 @@ Follow these steps to create a trigger that deploys your model to GKE:
 5. (Optional) Add **substitutions** or environment variables if your `cloudbuild.yaml` expects them.
 6. Click **Create**.
 
-✅ Now, whenever a new model is uploaded to GCS (via Pub/Sub trigger), this build will run and your `cloudbuild.yaml` will:
+Now, whenever a new model is uploaded to GCS (via Pub/Sub trigger), this build will run and your `cloudbuild.yaml` will:
 - Restart the GKE deployment with the new model
 - Apply the data drift detection job
 
 
-### 3. Push Docker Images
+### 🐳 3. Push Docker Images
 
 #### Build and push sentiment analyzer
 
