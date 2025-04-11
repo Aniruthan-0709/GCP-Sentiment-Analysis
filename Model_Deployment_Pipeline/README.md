@@ -39,12 +39,56 @@ gcloud config set compute/zone us-east1-b
 ```
 
 
-### 2. Create a GKE Cluster
+### 2. Create the necessary GCP resources 
 
+##### Create a GKE CLuster
 ```bash
 gcloud container clusters create sentiment-cluster --num-nodes=1 --zone=us-east1-b
 gcloud container clusters get-credentials sentiment-cluster
 ```
+##### Create BigQuery Table for User Logs
+
+```sql
+# Run this in BigQuery Console or via bq CLI:
+CREATE OR REPLACE TABLE `<YOUR_PROJECT_ID>.sentiment_data.user_logs` (
+  review STRING,
+  sentiment STRING,
+  timestamp TIMESTAMP
+);
+```
+
+##### Create Pub/Sub Topic + GCS Notification
+
+Create the Pub/Sub topic manually in the GCP UI:
+Name: model-updates-topic
+Bind the topic to GCS bucket notification:
+
+```bash
+gsutil notification create -t model-updates-topic -f json -e OBJECT_FINALIZE -p models/ gs://<YOUR_BUCKET_ID>
+
+```
+
+##### Create Cloud Build Trigger
+
+Follow these steps to create a trigger that deploys your model to GKE:
+
+1. Go to **Cloud Build** in the GCP Console.
+2. Click **Triggers** → **Create Trigger**.
+3. Fill in the following:
+   - **Name**: `deploymodelgke`
+   - **Event**: `Push to a branch` (or choose `Manual` if preferred)
+   - **Source Repository**: Connect to your GitHub repo (authorize if prompted)
+   - **Branch**: `main` (or your desired branch)
+4. Under **Configuration**, select:
+   - **Type**: `cloudbuild.yaml`
+   - **Location**: `Root of the repository`
+5. (Optional) Add **substitutions** or environment variables if your `cloudbuild.yaml` expects them.
+6. Click **Create**.
+
+✅ Now, whenever a new model is uploaded to GCS (via Pub/Sub trigger), this build will run and your `cloudbuild.yaml` will:
+- Restart the GKE deployment with the new model
+- Apply the data drift detection job
+
 
 ### 3. Push Docker Images
 
