@@ -36,6 +36,7 @@ gcloud auth login
 gcloud auth configure-docker
 gcloud config set project <YOUR_PROJECT_ID>
 gcloud config set compute/zone us-east1-b
+```
 
 
 ### 2. Create a GKE Cluster
@@ -43,3 +44,24 @@ gcloud config set compute/zone us-east1-b
 ```bash
 gcloud container clusters create sentiment-cluster --num-nodes=1 --zone=us-east1-b
 gcloud container clusters get-credentials sentiment-cluster
+```
+
+### 3. Push Docker Images
+
+#### Build and push sentiment analyzer
+
+```bash
+docker tag sentiment-analyzer-app gcr.io/<YOUR_PROJECT_ID>/sentiment-analyzer-app
+docker push gcr.io/<YOUR_PROJECT_ID>/sentiment-analyzer-app
+```
+
+
+#### Build and push data drift detector
+
+```bash
+cd data_drift_detector
+docker tag data-drift-detector gcr.io/<YOUR_PROJECT_ID>/data-drift-detector
+docker push gcr.io/<YOUR_PROJECT_ID>/data-drift-detector
+```
+
+
