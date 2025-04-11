@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sentiment-analyzer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sentiment
+  template:
+    metadata:
+      labels:
+        app: sentiment
+    spec:
+      containers:
+      - name: sentiment-analyzer
+        image: gcr.io/mlops-project-test-448822/sentiment-analyzer-app
+        ports:
+        - containerPort: 8080
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /app/gcp_key.json
+        volumeMounts:
+        - name: gcp-creds
+          mountPath: /app/gcp_key.json
+          subPath: gcp_key.json
+      volumes:
+      - name: gcp-creds
+        secret:
+          secretName: gcp-key-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sentiment-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: sentiment
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
