@@ -1,6 +1,10 @@
 #Download google cloud sdk from "https://cloud.google.com/sdk/docs/install" 
 #Set it to PATH in environment variables
 
+# Make sure to have gcp_key.json in two places
+# In Model_Deployment_Pipeline/gcp_key.json 
+# In Model_Deployment_Pipeline/data_drift_detector/gcp_key.json 
+
 #Authenticate Google Cloud Account and set Project
 gcloud auth login
 gcloud config set project <YOUR_BUCKET_ID>
