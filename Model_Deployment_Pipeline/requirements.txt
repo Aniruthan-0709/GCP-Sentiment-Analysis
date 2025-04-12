@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+google-cloud-storage
+google-cloud-bigquery
+scikit-learn
+jinja2
+python-multipart
+pandas
+db-dtypes
+
