@@ -55,7 +55,7 @@ def validate_schema(input_path=PROCESSED_DATA_PATH, schema_path=SCHEMA_PATH, sta
 
                 # Raise error if column is missing entirely
                 for feature, detail in anomalies.anomaly_info.items():
-                    if "missing" in detail.description.lower():
+                    if "column is completely missing" in detail.description.lower():
                         raise ValueError(f"🚨 Critical schema change! Column '{feature}' is missing.")
             else:
                 logging.info("✅ No schema anomalies found.")
