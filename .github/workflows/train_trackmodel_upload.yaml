@@ -61,11 +61,11 @@ jobs:
     - name: Run Sensitivity Analysis
       run: python ML_OPS_Sentiment_Analyser/sensitivity_analysis.py
 
-    - name: Version the Model
-      run: python ML_OPS_Sentiment_Analyser/model_versioning.py
-
     - name: Track Experiment with MLflow (GCP Artifact Storage)
       run: python ML_OPS_Sentiment_Analyser/experiment_tracking.py
+
+    - name: Version the Model
+      run: python ML_OPS_Sentiment_Analyser/model_versioning.py
 
     - name: Upload Trained Model to GCP
       run: python ML_OPS_Sentiment_Analyser/Model_to_cloud.py
