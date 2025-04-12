@@ -2,7 +2,9 @@ import mlflow
 import logging
 import os
 import pickle
+import pandas as pd
 from mlflow.tracking import MlflowClient
+from mlflow.models.signature import infer_signature
 import sklearn
 
 # ========== Logging ==========
@@ -55,7 +57,27 @@ with mlflow.start_run():
         with open(MODEL_PATH, "rb") as f:
             model = pickle.load(f)
 
-        mlflow.sklearn.log_model(model, "sentiment_analyzer_model")
+        # Define input example
+        input_example = pd.DataFrame({
+            "review_body": ["This product is amazing!"]
+        })
+
+        try:
+            # Make prediction using the actual input structure expected by your model
+            output_example = model.predict(input_example["review_body"])
+        except Exception as e:
+            logging.warning(f"Failed to run prediction on input_example: {e}")
+            output_example = [1]  # fallback
+
+        # Infer model signature
+        signature = infer_signature(input_example, output_example)
+
+        mlflow.sklearn.log_model(
+            sk_model=model,
+            artifact_path="sentiment_analyzer_model",
+            input_example=input_example,
+            signature=signature
+        )
         logging.info("Logged model to MLflow.")
     else:
         logging.warning("Model file not found. Skipping model logging.")
