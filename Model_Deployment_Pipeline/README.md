@@ -89,6 +89,22 @@ Now, whenever a new model is uploaded to GCS (via Pub/Sub trigger), this build w
 - Restart the GKE deployment with the new model
 - Apply the data drift detection job
 
+Authenticate your Github Repo with GCP Cloud Build
+```bash
+gcloud alpha builds connections create github --repository-owner="YOUR_GITHUB_USERNAME" --repository-name="YOUR_REPO_NAME" --connection-name="github-connection"
+```
+
+Create a Cloud Build Trigger that triggers the GKE cluster 
+```bash
+gcloud beta builds triggers create github --name="deploymodelgke" --region=us-east1 \
+  --repo-name="YOUR_REPO_NAME" \
+  --repo-owner="YOUR_GITHUB_USERNAME" \
+  --branch-pattern="^main$" \
+  --build-config="cloudbuild.yaml" \
+  --include-logs-with-status \
+  --substitutions="_DEPLOY_ENV=prod"
+```
+
 
 ### 🐳 3. Push Docker Images
 
