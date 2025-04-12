@@ -18,6 +18,11 @@ spec:
                   key: token
             - name: GOOGLE_APPLICATION_CREDENTIALS
               value: /app/gcp_key.json
+            - name: EMAIL_APP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gmail-secret
+                  key: EMAIL_APP_PASSWORD
           volumeMounts:
             - name: gcp-creds
               mountPath: /app/gcp_key.json
