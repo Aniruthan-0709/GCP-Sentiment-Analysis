@@ -1,3 +1,6 @@
+#Download google cloud sdk from "https://cloud.google.com/sdk/docs/install" 
+#Set it to PATH in environment variables
+
 #Authenticate Google Cloud Account and set Project
 gcloud auth login
 gcloud config set project <YOUR_BUCKET_ID>
