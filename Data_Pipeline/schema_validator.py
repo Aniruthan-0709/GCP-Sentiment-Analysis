@@ -48,7 +48,7 @@ def validate_schema(input_path=PROCESSED_DATA_PATH, schema_path=SCHEMA_PATH, sta
             schema = tfdv.load_schema_text(schema_path)
             anomalies = tfdv.validate_statistics(stats, schema)
 
-            if schema_util.anomalies_present(anomalies):
+            if anomalies.anomaly_info:
                 logging.warning("⚠️ Schema anomalies found.")
                 for feature, detail in anomalies.anomaly_info.items():
                     logging.warning(f" - {feature}: {detail.description}")
