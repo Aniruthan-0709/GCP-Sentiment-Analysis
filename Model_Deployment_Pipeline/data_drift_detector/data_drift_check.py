@@ -5,6 +5,10 @@ from scipy.stats import chi2_contingency
 import tempfile
 import os
 import numpy as np
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import os
 import requests  # <-- missing import
 
 # Get key path (for local testing only — not needed in GKE if using Workload Identity or mounted secret)
@@ -44,7 +48,7 @@ def detect_data_drift(reference_df, current_df, output_path="drift_report.html")
     
     drifted_features = 0
     significant_features = []
-    alpha = 0.001
+    alpha = 0.05
 
     for i, word in enumerate(vectorizer.get_feature_names_out()):
         count_ref = ref_word_counts[i]
@@ -110,6 +114,45 @@ def trigger_github_action():
         print(f"❌ Failed to trigger GitHub Actions: {response.status_code}, {response.text}")
 
 
+def send_notification_email(drift_detected):
+    sender_email = "manim31899@gmail.com"
+    receiver_email = "manim31899@gmail.com"
+    password = os.getenv("EMAIL_APP_PASSWORD")  # Set this as a Kubernetes secret
+
+    subject = "✅ Model Deployed & Drift Report Generated"
+    if drift_detected:
+        body = (
+            "Hello,\n\n"
+            "Sentiment Model Deployment Complete.\n"
+            "Drift report generated and stored in GCS: `mlops_dataset123/drift_report/`\n\n"
+            "Drift is detected and so the Data Pipeline is triggered again"
+            "Thanks,\nSentiment Analyzer Bot"
+        )
+    else:
+        body = (
+            "Hello,\n\n"
+            "Sentiment Model Deployment Complete.\n"
+            "Drift report generated and stored in GCS: `mlops_dataset123/drift_report/`\n\n"
+            "Drift is not detected and so the Data Pipeline is not triggered again\n"
+            "Thanks,\nSentiment Analyzer Bot"
+        )
+
+    message = MIMEMultipart()
+    message["From"] = sender_email
+    message["To"] = receiver_email
+    message["Subject"] = subject
+    message.attach(MIMEText(body, "plain"))
+
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(sender_email, password)
+            server.send_message(message)
+        print("📧 Notification email sent successfully.")
+    except Exception as e:
+        print(f"❌ Email failed: {e}")
+
+
+
 if __name__ == "__main__":
     reference_df = load_reference_data()
     current_df = load_current_data()
@@ -122,3 +165,5 @@ if __name__ == "__main__":
 
     if drift_detected:
         trigger_github_action()
+    
+    send_notification_email(drift_detected) 
