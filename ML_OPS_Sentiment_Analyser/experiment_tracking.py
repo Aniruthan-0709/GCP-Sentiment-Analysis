@@ -55,7 +55,7 @@ with mlflow.start_run():
         with open(MODEL_PATH, "rb") as f:
             model = pickle.load(f)
 
-        mlflow.sklearn.log_model(model, "naive_bayes_sentiment_model")
+        mlflow.sklearn.log_model(model, "sentiment_analyzer_model")
         logging.info("Logged model to MLflow.")
     else:
         logging.warning("Model file not found. Skipping model logging.")
