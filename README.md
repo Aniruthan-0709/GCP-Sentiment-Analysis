@@ -15,7 +15,7 @@
 Understanding customer sentiment is crucial for businesses to enhance user experience, improve product offerings, and make data-driven decisions. This project focuses on analyzing **Amazon customer reviews** to classify them into **positive, neutral, or negative sentiments** using **machine learning and natural language processing (NLP)** techniques.  
 
 ### **Key Challenges & Solutions**  
-✔ **Large-scale Data Processing:** Handles **54.41GB of Amazon US Customer Reviews Dataset**.  
+✔ **Large-scale Data Processing:** Handles **Amazon US Customer Reviews Dataset**.  
 ✔ **Data Imbalance:** Uses **SMOTE** to balance sentiment distribution.  
 ✔ **Automated Workflow:** **Apache Airflow** orchestrates data ingestion, validation, preprocessing, bias detection, and anomaly detection.  
 ✔ **Bias & Ethical Concerns:** **TensorFlow Data Validation (TFDV)** ensures fairness by monitoring data drift.  
