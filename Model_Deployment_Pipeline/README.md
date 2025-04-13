@@ -129,6 +129,8 @@ docker push gcr.io/<YOUR_PROJECT_ID>/data-drift-detector
 kubectl create secret generic gcp-key-secret --from-file=gcp_key.json=<path-to-your-service-account-key.json>
 
 kubectl create secret generic github-pat --from-literal=token=<YOUR_GITHUB_PAT>
+
+kubectl create secret generic gmail-secret --from-literal=EMAIL_APP_PASSWORD='your_app_password'
 ```
 
 ### 📦 5. Deploy to GKE
