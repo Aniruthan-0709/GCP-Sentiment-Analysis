@@ -5,6 +5,8 @@ import pickle
 import shap
 import matplotlib.pyplot as plt
 
+from utils.gcp_utils import load_csv_from_gcs
+
 # ========== Logging ==========
 logging.basicConfig(
     level=logging.INFO,
@@ -31,7 +33,9 @@ vectorizer = model_pipeline.named_steps["tfidf"]
 model = model_pipeline.named_steps["nb"]
 
 # ========== Load and Prepare Data ==========
-df = pd.read_csv("Data/Data.csv")
+BUCKET_NAME = os.environ.get("GCP_BUCKET")
+BLOB_NAME = os.environ.get("GCP_PROCESSED_BLOB")
+df = load_csv_from_gcs(BUCKET_NAME, BLOB_NAME)
 
 def map_sentiment(rating):
     if rating <= 2:
