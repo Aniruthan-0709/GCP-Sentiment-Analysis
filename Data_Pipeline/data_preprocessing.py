@@ -4,6 +4,7 @@ import logging
 from collections import Counter
 from imblearn.over_sampling import SMOTE
 from sklearn.preprocessing import MinMaxScaler
+from utils.gcs_utils import read_csv_from_gcs
 
 # Setup directory paths
 BASE_DIR = os.path.dirname(__file__)
@@ -20,23 +21,24 @@ logging.basicConfig(
     ]
 )
 
-# File paths
-RAW_DATA_PATH = os.path.join(BASE_DIR, "data/raw/reviews.csv")
+# Output file paths
 PROCESSED_PARQUET_PATH = os.path.join(BASE_DIR, "data/processed/reviews.parquet")
 PROCESSED_CSV_PATH = PROCESSED_PARQUET_PATH.replace(".parquet", ".csv")
 
-def preprocess_data(input_path=RAW_DATA_PATH, parquet_path=PROCESSED_PARQUET_PATH, csv_path=PROCESSED_CSV_PATH):
+def preprocess_data(parquet_path=PROCESSED_PARQUET_PATH, csv_path=PROCESSED_CSV_PATH):
     """Cleans, encodes, balances, and adds sentiment labels to the dataset."""
     try:
-        logging.info("🔹 Loading raw data...")
-        df = pd.read_csv(input_path)
+        logging.info("🔹 Reading raw data directly from GCS...")
+        bucket = os.environ.get("GCP_BUCKET")
+        blob = os.environ.get("SOURCE_BLOB")
+        df = read_csv_from_gcs(bucket, blob)
 
         logging.info("🔹 Dropping duplicates & handling missing values...")
         df = df.drop_duplicates()
         df = df.dropna(subset=["star_rating", "review_body", "product_category"])
 
         if df["star_rating"].min() < 1 or df["star_rating"].max() > 5:
-            logging.warning(f"⚠️ Star ratings out of range. Scaling to 1-5...")
+            logging.warning("⚠️ Star ratings out of range. Scaling to 1–5...")
             scaler = MinMaxScaler(feature_range=(1, 5))
             df["star_rating"] = scaler.fit_transform(df[["star_rating"]]).round().astype(int)
 
@@ -53,14 +55,13 @@ def preprocess_data(input_path=RAW_DATA_PATH, parquet_path=PROCESSED_PARQUET_PAT
             else "positive"
         )
 
-        # Check sentiment distribution
         sentiment_counts = Counter(df["review_sentiment"])
         logging.info(f"🔹 Initial Sentiment Distribution: {sentiment_counts}")
 
         if len(sentiment_counts) > 2 and max(sentiment_counts.values()) / min(sentiment_counts.values()) > 1.5:
             logging.info("🔹 Applying SMOTE for class balancing...")
             smote = SMOTE(sampling_strategy="auto", random_state=42)
-            X = df.drop(columns=["review_sentiment", "review_body", "product_category"])  # exclude text/categorical
+            X = df.drop(columns=["review_sentiment", "review_body", "product_category"])
             y = df["review_sentiment"]
 
             X_resampled, y_resampled = smote.fit_resample(X.select_dtypes(include=["number"]), y)
@@ -72,13 +73,12 @@ def preprocess_data(input_path=RAW_DATA_PATH, parquet_path=PROCESSED_PARQUET_PAT
             df_text = df[["review_body", "product_category"]].iloc[:len(df_resampled)].reset_index(drop=True)
             df = pd.concat([df_resampled, df_text], axis=1)
 
-        # Save files
         os.makedirs(os.path.dirname(parquet_path), exist_ok=True)
         df.to_parquet(parquet_path, index=False)
         df.to_csv(csv_path, index=False)
 
-        logging.info(f"✅ Preprocessing complete. Saved to:\n  - {parquet_path}\n  - {csv_path}")
-        logging.info(f"🔹 Balanced Sentiment Distribution: {Counter(df['review_sentiment'])}")
+        logging.info(f"✅ Preprocessing complete.\n  - {parquet_path}\n  - {csv_path}")
+        logging.info(f"🔹 Final Sentiment Distribution: {Counter(df['review_sentiment'])}")
 
         return parquet_path, csv_path
 
