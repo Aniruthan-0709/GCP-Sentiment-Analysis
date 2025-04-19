@@ -5,6 +5,8 @@ import pickle
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 
+from utils.gcp_utils import load_csv_from_gcs
+
 # ========== Logging ==========
 logging.basicConfig(
     level=logging.INFO,
@@ -23,8 +25,10 @@ if not os.path.exists(MODEL_FILE):
 with open(MODEL_FILE, "rb") as f:
     model_pipeline = pickle.load(f)
 
-# ========== Load Data ==========
-df = pd.read_csv("Data/Data.csv")
+# ========== Load Data from GCS ==========
+BUCKET_NAME = os.environ.get("GCP_BUCKET")
+BLOB_NAME = os.environ.get("GCP_PROCESSED_BLOB")
+df = load_csv_from_gcs(BUCKET_NAME, BLOB_NAME)
 
 def map_sentiment(rating):
     if rating <= 2:
