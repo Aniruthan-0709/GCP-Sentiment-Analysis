@@ -4,7 +4,7 @@ import pandas as pd
 import os
 import logging
 import sys
-from utils.gcs_utils import read_parquet_from_gcs  # NEW import
+from utils.gcs_utils import read_csv_from_gcs
 from tensorflow_data_validation.utils import schema_util
 
 # Directory setup
@@ -27,7 +27,7 @@ logging.basicConfig(
 
 # GCS ENV
 BUCKET_NAME = os.environ.get("GCP_BUCKET")
-PROCESSED_BLOB = os.environ.get("GCP_PROCESSED_PARQUET")  # e.g., processed/reviews.parquet
+PROCESSED_CSV_BLOB = os.environ.get("GCP_PROCESSED_BLOB")  # e.g., "data/processed/preprocessed.csv"
 
 # Local schema/stat paths
 SCHEMA_PATH = os.path.join(VALIDATION_DIR, "schema.pbtxt")
@@ -41,8 +41,8 @@ def save_statistics_as_tfrecord(stats, path):
 def validate_schema(schema_path=SCHEMA_PATH, stats_path=REFERENCE_STATS_PATH):
     """Validates schema using TFDV and saves schema/stats as needed."""
     try:
-        logging.info("🔹 Reading processed dataset directly from GCS...")
-        df = read_parquet_from_gcs(BUCKET_NAME, PROCESSED_BLOB)
+        logging.info("🔹 Reading processed CSV dataset from GCS...")
+        df = read_csv_from_gcs(BUCKET_NAME, PROCESSED_CSV_BLOB)
 
         logging.info("🔹 Generating statistics from dataset...")
         stats = tfdv.generate_statistics_from_dataframe(df)
