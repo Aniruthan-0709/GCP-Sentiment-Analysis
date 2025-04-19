@@ -4,7 +4,8 @@ import logging
 from collections import Counter
 from imblearn.over_sampling import SMOTE
 from sklearn.preprocessing import MinMaxScaler
-from utils.gcs_utils import read_csv_from_gcs
+from utils.gcs_utils import read_csv_from_gcs, upload_to_gcp
+from io import StringIO
 
 # Setup directory paths
 BASE_DIR = os.path.dirname(__file__)
@@ -21,17 +22,14 @@ logging.basicConfig(
     ]
 )
 
-# Output file paths
-PROCESSED_PARQUET_PATH = os.path.join(BASE_DIR, "data/processed/reviews.parquet")
-PROCESSED_CSV_PATH = PROCESSED_PARQUET_PATH.replace(".parquet", ".csv")
-
-def preprocess_data(parquet_path=PROCESSED_PARQUET_PATH, csv_path=PROCESSED_CSV_PATH):
-    """Cleans, encodes, balances, and adds sentiment labels to the dataset."""
+def preprocess_data():
     try:
         logging.info("🔹 Reading raw data directly from GCS...")
-        bucket = os.environ.get("GCP_BUCKET")
-        blob = os.environ.get("SOURCE_BLOB")
-        df = read_csv_from_gcs(bucket, blob)
+        bucket = os.environ["GCP_BUCKET"]
+        raw_blob = os.environ["SOURCE_BLOB"]
+        processed_blob = os.environ["GCP_PROCESSED_BLOB"]
+
+        df = read_csv_from_gcs(bucket, raw_blob)
 
         logging.info("🔹 Dropping duplicates & handling missing values...")
         df = df.drop_duplicates()
@@ -73,18 +71,21 @@ def preprocess_data(parquet_path=PROCESSED_PARQUET_PATH, csv_path=PROCESSED_CSV_
             df_text = df[["review_body", "product_category"]].iloc[:len(df_resampled)].reset_index(drop=True)
             df = pd.concat([df_resampled, df_text], axis=1)
 
-        os.makedirs(os.path.dirname(parquet_path), exist_ok=True)
-        df.to_parquet(parquet_path, index=False)
-        df.to_csv(csv_path, index=False)
+        # Upload directly to GCS without saving locally
+        logging.info(f"☁️ Uploading processed CSV to GCS: gs://{bucket}/{processed_blob}")
+        csv_buffer = StringIO()
+        df.to_csv(csv_buffer, index=False)
+        blob_data = csv_buffer.getvalue().encode("utf-8")
+        upload_to_gcp(bucket, blob_data, processed_blob, from_memory=True)
 
-        logging.info(f"✅ Preprocessing complete.\n  - {parquet_path}\n  - {csv_path}")
+        logging.info("✅ Preprocessing complete and uploaded to GCS.")
         logging.info(f"🔹 Final Sentiment Distribution: {Counter(df['review_sentiment'])}")
 
-        return parquet_path, csv_path
+        return processed_blob
 
     except Exception as e:
         logging.error(f"❌ Error during preprocessing: {e}")
-        return None, None
+        return None
 
 if __name__ == "__main__":
     preprocess_data()
