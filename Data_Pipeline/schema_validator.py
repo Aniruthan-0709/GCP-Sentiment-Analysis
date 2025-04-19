@@ -4,6 +4,7 @@ import pandas as pd
 import os
 import logging
 import sys
+from utils.gcs_utils import read_parquet_from_gcs  # NEW import
 from tensorflow_data_validation.utils import schema_util
 
 # Directory setup
@@ -24,8 +25,11 @@ logging.basicConfig(
     ]
 )
 
-# File paths
-PROCESSED_DATA_PATH = os.path.join(BASE_DIR, "data/processed/reviews.parquet")
+# GCS ENV
+BUCKET_NAME = os.environ.get("GCP_BUCKET")
+PROCESSED_BLOB = os.environ.get("GCP_PROCESSED_PARQUET")  # e.g., processed/reviews.parquet
+
+# Local schema/stat paths
 SCHEMA_PATH = os.path.join(VALIDATION_DIR, "schema.pbtxt")
 REFERENCE_STATS_PATH = os.path.join(VALIDATION_DIR, "reference_stats.tfrecord")
 
@@ -34,11 +38,11 @@ def save_statistics_as_tfrecord(stats, path):
     with tf.io.TFRecordWriter(path) as writer:
         writer.write(stats.SerializeToString())
 
-def validate_schema(input_path=PROCESSED_DATA_PATH, schema_path=SCHEMA_PATH, stats_path=REFERENCE_STATS_PATH):
+def validate_schema(schema_path=SCHEMA_PATH, stats_path=REFERENCE_STATS_PATH):
     """Validates schema using TFDV and saves schema/stats as needed."""
     try:
-        logging.info("🔹 Reading processed dataset...")
-        df = pd.read_parquet(input_path)
+        logging.info("🔹 Reading processed dataset directly from GCS...")
+        df = read_parquet_from_gcs(BUCKET_NAME, PROCESSED_BLOB)
 
         logging.info("🔹 Generating statistics from dataset...")
         stats = tfdv.generate_statistics_from_dataframe(df)
@@ -53,7 +57,6 @@ def validate_schema(input_path=PROCESSED_DATA_PATH, schema_path=SCHEMA_PATH, sta
                 for feature, detail in anomalies.anomaly_info.items():
                     logging.warning(f" - {feature}: {detail.description}")
 
-                # Raise error if column is missing entirely
                 for feature, detail in anomalies.anomaly_info.items():
                     if "column is completely missing" in detail.description.lower():
                         raise ValueError(f"🚨 Critical schema change! Column '{feature}' is missing.")
