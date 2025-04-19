@@ -46,8 +46,8 @@ jobs:
     - name: ✅ Load Data from GCS and Train Model
       run: python ML_OPS_Sentiment_Analyser/Model_training.py
 
-    - name: Hyperparameter Tuning
-      run: python ML_OPS_Sentiment_Analyser/hyperparameter_tuning.py
+    # - name: Hyperparameter Tuning
+    #   run: python ML_OPS_Sentiment_Analyser/hyperparameter_tuning.py
 
     - name: Validate the Model
       run: python ML_OPS_Sentiment_Analyser/model_validation.py
