@@ -1,4 +1,4 @@
-name: Model Development Pipeline
+name: Model Development Pipeline Final
 
 on:
   workflow_dispatch:
