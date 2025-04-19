@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Review Sentiment Results</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-6">
+    <div class="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-6">
+        <h1 class="text-2xl font-bold text-indigo-700 mb-4">📦 Product Reviews & Sentiments</h1>
+
+        {% if reviews %}
+            <h2 class="text-xl font-semibold text-gray-700 mb-6">🛍 Product: {{ reviews[0].product }}</h2>
+
+            <div class="space-y-4">
+                {% for item in reviews %}
+                    <div class="border rounded-lg p-4 bg-gray-50">
+                        <p class="text-gray-800 font-medium">{{ item.review }}</p>
+                        <p class="mt-2 font-semibold
+                            {% if item.sentiment == 'Positive' %}text-green-600
+                            {% elif item.sentiment == 'Negative' %}text-red-500
+                            {% else %}text-yellow-600{% endif %}">
+                            Sentiment: {{ item.sentiment }}
+                        </p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-gray-500">No reviews found. Please upload a valid PDF file.</p>
+        {% endif %}
+
+        <div class="mt-8">
+            <a href="/" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg">⬅ Back to Home</a>
+        </div>
+    </div>
+</body>
+</html>
