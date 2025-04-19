@@ -2,7 +2,7 @@ import os
 from google.cloud import storage
 
 # ===== Update file name to match new pipeline file =====
-BUCKET_NAME = "mlops_dataset123"
+BUCKET_NAME = os.environ.get("GCP_BUCKET")
 LOCAL_MODEL_PATH = "models/sentiment_analyzer_model.pkl"
 GCS_MODEL_PATH = "models/sentiment_analyzer_model.pkl"
 
