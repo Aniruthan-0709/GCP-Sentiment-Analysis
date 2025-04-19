@@ -3,6 +3,7 @@ from google.cloud import storage
 from io import BytesIO
 
 
+
 def download_from_gcp(bucket_name, source_blob_name, destination_file_name):
     if not os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
         raise EnvironmentError("GOOGLE_APPLICATION_CREDENTIALS not set")
@@ -30,15 +31,13 @@ def upload_to_gcp(bucket_name, content, destination_blob_name, from_memory=False
     print(f"✅ Uploaded to gs://{bucket_name}/{destination_blob_name}")
 
 
-def read_csv_from_gcs(bucket_name, blob_name):
-    from google.cloud import storage
-    import pandas as pd
 
+def read_csv_from_gcs(bucket_name, blob_name):
     if not os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
         raise EnvironmentError("GOOGLE_APPLICATION_CREDENTIALS not set")
-
     client = storage.Client()
     bucket = client.bucket(bucket_name)
     blob = bucket.blob(blob_name)
     content = blob.download_as_bytes()
     return pd.read_csv(BytesIO(content))
+
