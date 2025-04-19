@@ -1,0 +1,87 @@
+name: Model Development Pipeline
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [trigger-model-pipeline]
+  schedule:
+    - cron: "0 0 * * 1"  # Every Monday at midnight UTC
+
+jobs:
+  train-and-upload:
+    runs-on: ubuntu-latest
+
+    env:
+      GCP_BUCKET: ${{ secrets.GCP_BUCKET }}
+      GCP_PROCESSED_BLOB: ${{ secrets.GCP_PROCESSED_BLOB }}
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Set Up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.9"
+
+    - name: Install Dependencies
+      run: pip install -r ML_OPS_Sentiment_Analyser/requirements.txt
+
+    - name: Authenticate with Google Cloud
+      env:
+        GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
+      run: |
+        echo "$GCP_CREDENTIALS" > gcp-key.json
+        export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/gcp-key.json
+        gcloud auth activate-service-account --key-file=gcp-key.json
+        echo "GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/gcp-key.json" >> $GITHUB_ENV
+        gcloud auth list
+
+    - name: Create Directories
+      run: |
+        mkdir -p ML_OPS_Sentiment_Analyser/models
+        mkdir -p ML_OPS_Sentiment_Analyser/artifacts
+        mkdir -p ML_OPS_Sentiment_Analyser/mlruns
+
+    - name: ✅ Load Data from GCS and Train Model
+      run: python ML_OPS_Sentiment_Analyser/Model_training.py
+
+    - name: Hyperparameter Tuning
+      run: python ML_OPS_Sentiment_Analyser/hyperparameter_tuning.py
+
+    - name: Validate the Model
+      run: python ML_OPS_Sentiment_Analyser/model_validation.py
+
+    - name: Detect Model Bias
+      run: python ML_OPS_Sentiment_Analyser/bias_detection.py
+
+    - name: Run Sensitivity Analysis
+      run: python ML_OPS_Sentiment_Analyser/sensitivity_analysis.py
+
+    - name: Track Experiment with MLflow (GCP Artifact Storage)
+      run: python ML_OPS_Sentiment_Analyser/experiment_tracking.py
+
+    - name: Version the Model
+      run: python ML_OPS_Sentiment_Analyser/model_versioning.py
+
+    - name: Upload Trained Model to GCP
+      run: python ML_OPS_Sentiment_Analyser/Model_to_cloud.py
+
+    - name: Upload Trained Model Files
+      uses: actions/upload-artifact@v4
+      with:
+        name: trained-model
+        path: ML_OPS_Sentiment_Analyser/models/
+
+    - name: Upload MLflow Logs (Local Run Metadata)
+      uses: actions/upload-artifact@v4
+      with:
+        name: mlflow-logs
+        path: ML_OPS_Sentiment_Analyser/mlruns/
+
+    - name: 📧 Send Success Email via Gmail SMTP
+      env:
+        SMTP_SENDER: ${{ secrets.SMTP_SENDER }}
+        SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+        SMTP_RECEIVER: ${{ secrets.SMTP_RECEIVER }}
+      run: python ML_OPS_Sentiment_Analyser/send_email.py
