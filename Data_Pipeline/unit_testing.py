@@ -1,24 +1,19 @@
 import os
 import pytest
 import pandas as pd
+from utils.gcs_utils import read_csv_from_gcs
 
-# ==== Basic File Tests ====
+# GCS env variables
+GCP_BUCKET = os.environ["GCP_BUCKET"]
+GCP_PROCESSED_BLOB = os.environ["GCP_PROCESSED_BLOB"]
 
-def test_raw_data_file_exists():
-    assert os.path.exists("Data_Pipeline/data/raw/reviews.csv"), "Raw data file (reviews.csv) not found."
+# ==== Load Data Once for All Tests ====
 
-def test_processed_parquet_exists():
-    assert os.path.exists("Data_Pipeline/data/processed/reviews.parquet"), "Processed .parquet file not found."
-
-def test_processed_csv_exists():
-    assert os.path.exists("Data_Pipeline/data/processed/reviews.csv"), "Processed .csv file not found."
-
+@pytest.fixture(scope="session")
+def processed_df():
+    return read_csv_from_gcs(GCP_BUCKET, GCP_PROCESSED_BLOB)
 
 # ==== Data Quality Checks ====
-
-@pytest.fixture
-def processed_df():
-    return pd.read_csv("Data_Pipeline/data/processed/reviews.csv")
 
 def test_sentiment_column_exists(processed_df):
     assert "review_sentiment" in processed_df.columns, "Missing 'review_sentiment' column in processed data"
@@ -37,8 +32,7 @@ def test_sentiment_class_distribution(processed_df):
     expected_classes = {"negative", "neutral", "positive"}
     assert expected_classes.issubset(classes), f"Expected sentiment classes missing. Found: {classes}"
 
-
-# ==== Schema and Validation ====
+# ==== Schema and Logs Validation (LOCAL FILE CHECKS ONLY) ====
 
 def test_schema_file_exists():
     assert os.path.exists("Data_Pipeline/validation/schema.pbtxt"), "Schema file not generated"
