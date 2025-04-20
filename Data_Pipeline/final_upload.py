@@ -1,14 +1,14 @@
 import os
 import logging
 import pandas as pd
-from utils.gcp_utils import load_csv_from_gcs, upload_to_gcs
-from io import BytesIO
+from io import StringIO
+from utils.gcp_utils import load_csv_from_gcs, upload_to_gcp
 
-# ========== Environment Variables ==========
+# ========== Environment ==========
 gcs_bucket = os.getenv("GCP_BUCKET")
-gcs_blob = os.getenv("GCP_PROCESSED_BLOB")  # e.g., processed/reviews.csv
+gcs_blob = os.getenv("GCP_PROCESSED_BLOB")  # e.g., "processed/reviews.csv"
 
-# ========== Logging Setup ==========
+# ========== Logging ==========
 LOG_DIR = os.path.join(os.path.dirname(__file__), "logs")
 os.makedirs(LOG_DIR, exist_ok=True)
 
@@ -21,24 +21,24 @@ logging.basicConfig(
     ]
 )
 
-# ========== Upload Logic ==========
 def run_upload():
     try:
-        logging.info(f"📥 Reading processed CSV from: gs://{gcs_bucket}/{gcs_blob}")
+        logging.info(f"📥 Reading processed CSV from gs://{gcs_bucket}/{gcs_blob}")
         df = load_csv_from_gcs(gcs_bucket, gcs_blob)
 
-        logging.info(f"✅ Data loaded. Rows: {len(df)}, Columns: {df.shape[1]}")
+        logging.info(f"✅ Loaded data: {len(df)} rows, {df.shape[1]} columns")
 
-        # Perform optional transformation (identity in this case)
-        # e.g., df = df[df["star_rating"] > 1]
+        # (Optional) Transform df here
+        # df = df[df["star_rating"].notnull()]
 
-        # Save to in-memory CSV
-        buffer = BytesIO()
+        # Convert to CSV in memory
+        buffer = StringIO()
         df.to_csv(buffer, index=False)
         buffer.seek(0)
 
-        logging.info(f"☁️ Uploading updated CSV back to: gs://{gcs_bucket}/{gcs_blob}")
-        upload_to_gcs(gcs_bucket, buffer, gcs_blob, is_fileobj=True)
+        logging.info(f"☁️ Uploading updated CSV to gs://{gcs_bucket}/{gcs_blob}")
+        upload_to_gcp(gcs_bucket, buffer.getvalue(), gcs_blob, from_memory=True)
+
         logging.info("✅ Upload complete.")
 
     except Exception as e:
