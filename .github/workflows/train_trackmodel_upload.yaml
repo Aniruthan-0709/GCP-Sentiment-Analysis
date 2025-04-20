@@ -1,4 +1,4 @@
-name: Model Development Pipeline
+name: Model Development Pipeline Final
 
 on:
   workflow_dispatch:
@@ -10,6 +10,10 @@ on:
 jobs:
   train-and-upload:
     runs-on: ubuntu-latest
+
+    env:
+      GCP_BUCKET: ${{ secrets.GCP_BUCKET }}
+      GCP_PROCESSED_BLOB: ${{ secrets.GCP_PROCESSED_BLOB }}
 
     steps:
     - name: Checkout Repository
@@ -35,22 +39,15 @@ jobs:
 
     - name: Create Directories
       run: |
-        mkdir -p ML_OPS_Sentiment_Analyser/Data
         mkdir -p ML_OPS_Sentiment_Analyser/models
         mkdir -p ML_OPS_Sentiment_Analyser/artifacts
         mkdir -p ML_OPS_Sentiment_Analyser/mlruns
 
-    - name: Download Data from GCP
-      env:
-        GCP_BUCKET: ${{ secrets.GCP_BUCKET }}
-        GCP_PROCESSED_BLOB: ${{ secrets.GCP_PROCESSED_BLOB }}
-      run: python ML_OPS_Sentiment_Analyser/Data_fetch.py
-
-    - name: Train the Model
+    - name: ✅ Load Data from GCS and Train Model
       run: python ML_OPS_Sentiment_Analyser/Model_training.py
 
-    - name: Hyperparameter Tuning
-      run: python ML_OPS_Sentiment_Analyser/hyperparameter_tuning.py
+    # - name: Hyperparameter Tuning
+    #   run: python ML_OPS_Sentiment_Analyser/hyperparameter_tuning.py
 
     - name: Validate the Model
       run: python ML_OPS_Sentiment_Analyser/model_validation.py
@@ -88,5 +85,3 @@ jobs:
         SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
         SMTP_RECEIVER: ${{ secrets.SMTP_RECEIVER }}
       run: python ML_OPS_Sentiment_Analyser/send_email.py
-
-

@@ -13,7 +13,7 @@ logging.basicConfig(
 logging.info("Starting Model Versioning...")
 
 # ====================== GCP CONFIG ======================
-BUCKET_NAME = "mlops_dataset123"
+BUCKET_NAME = os.environ.get("GCP_BUCKET")
 GCS_MODEL_FOLDER = "models/"
 LOCAL_MODEL_PATH = "models/sentiment_analyzer_model.pkl"
 

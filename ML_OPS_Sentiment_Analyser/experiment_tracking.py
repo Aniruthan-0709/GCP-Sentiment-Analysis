@@ -7,6 +7,8 @@ from mlflow.tracking import MlflowClient
 from mlflow.models.signature import infer_signature
 import sklearn
 
+from utils.gcp_utils import load_csv_from_gcs
+
 # ========== Logging ==========
 logging.basicConfig(
     level=logging.INFO,
@@ -19,7 +21,11 @@ logging.basicConfig(
 
 logging.info("Starting Experiment Tracking with MLflow...")
 
-# ========== Configs ==========
+# ========== GCP Config ==========
+BUCKET_NAME = os.environ.get("GCP_BUCKET")
+BLOB_NAME = os.environ.get("GCP_PROCESSED_BLOB")
+
+# ========== MLflow Config ==========
 TRACKING_URI = os.path.abspath("ML_OPS_Sentiment_Analyser/mlruns")
 ARTIFACT_URI = "gs://mlops_dataset123/mlruns/artifacts"
 EXPERIMENT_NAME = "Sentiment_Model_Experiments"
@@ -45,6 +51,12 @@ else:
 
 mlflow.set_experiment(EXPERIMENT_NAME)
 
+# ========== Load Sample Data from GCS ==========
+df = load_csv_from_gcs(BUCKET_NAME, BLOB_NAME)
+df = df.dropna(subset=["review_body"])
+df["review_body"] = df["review_body"].astype(str)
+input_example = df[["review_body"]].sample(n=1, random_state=42)
+
 # ========== Run Tracking ==========
 with mlflow.start_run():
     # Log parameters and metrics
@@ -57,19 +69,12 @@ with mlflow.start_run():
         with open(MODEL_PATH, "rb") as f:
             model = pickle.load(f)
 
-        # Define input example
-        input_example = pd.DataFrame({
-            "review_body": ["This product is amazing!"]
-        })
-
         try:
-            # Make prediction using the actual input structure expected by your model
             output_example = model.predict(input_example["review_body"])
         except Exception as e:
             logging.warning(f"Failed to run prediction on input_example: {e}")
             output_example = [1]  # fallback
 
-        # Infer model signature
         signature = infer_signature(input_example, output_example)
 
         mlflow.sklearn.log_model(

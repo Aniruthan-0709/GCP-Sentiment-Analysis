@@ -8,6 +8,8 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import accuracy_score
 from sklearn.pipeline import Pipeline
 
+from utils.gcp_utils import load_csv_from_gcs
+
 # ========== Logging ==========
 logging.basicConfig(
     level=logging.INFO,
@@ -16,15 +18,12 @@ logging.basicConfig(
 )
 logging.info("Starting Sentiment Analysis Training with Naïve Bayes...")
 
-# ========== Config ==========
-DATA_PATH = "Data/Data.csv"
-MODEL_DIR = "models"
-MODEL_FILE = os.path.join(MODEL_DIR, "sentiment_analyzer_model.pkl")
-
-os.makedirs(MODEL_DIR, exist_ok=True)
+# ========== GCP Config ==========
+BUCKET_NAME = os.environ.get("GCP_BUCKET")
+BLOB_NAME = os.environ.get("GCP_PROCESSED_BLOB")
 
 # ========== Load Data ==========
-df = pd.read_csv(DATA_PATH)
+df = load_csv_from_gcs(BUCKET_NAME, BLOB_NAME)
 
 def map_sentiment(rating):
     if rating <= 2:
@@ -70,7 +69,12 @@ y_pred = pipeline.predict(X_test)
 accuracy = accuracy_score(y_test, y_pred)
 logging.info(f"Validation Accuracy: {accuracy:.4f}")
 
-# ========== Save Pipeline using Pickle ==========
+# ========== Save Pipeline ==========
+MODEL_DIR = "models"
+MODEL_FILE = os.path.join(MODEL_DIR, "sentiment_analyzer_model.pkl")
+os.makedirs(MODEL_DIR, exist_ok=True)
+
 with open(MODEL_FILE, "wb") as f:
     pickle.dump(pipeline, f)
+
 logging.info(f"Pipeline model saved at {MODEL_FILE}")
