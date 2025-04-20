@@ -2,7 +2,7 @@ import os
 import logging
 import pandas as pd
 from io import StringIO
-from utils.gcs_utils import load_csv_from_gcs, upload_to_gcp
+from utils.gcs_utils import read_csv_from_gcs, upload_to_gcp
 
 # ========== Environment ==========
 gcs_bucket = os.getenv("GCP_BUCKET")
@@ -24,7 +24,7 @@ logging.basicConfig(
 def run_upload():
     try:
         logging.info(f"📥 Reading processed CSV from gs://{gcs_bucket}/{gcs_blob}")
-        df = load_csv_from_gcs(gcs_bucket, gcs_blob)
+        df = read_csv_from_gcs(gcs_bucket, gcs_blob)
 
         logging.info(f"✅ Loaded data: {len(df)} rows, {df.shape[1]} columns")
 
