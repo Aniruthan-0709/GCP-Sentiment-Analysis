@@ -7,12 +7,11 @@ from sklearn.preprocessing import MinMaxScaler
 from utils.gcs_utils import read_csv_from_gcs, upload_to_gcp
 from io import StringIO
 
-# Setup directory paths
+# Setup logging
 BASE_DIR = os.path.dirname(__file__)
 LOG_DIR = os.path.join(BASE_DIR, "logs")
 os.makedirs(LOG_DIR, exist_ok=True)
 
-# Setup logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
@@ -24,11 +23,11 @@ logging.basicConfig(
 
 def preprocess_data():
     try:
-        logging.info("🔹 Reading raw data directly from GCS...")
         bucket = os.environ["GCP_BUCKET"]
         raw_blob = os.environ["SOURCE_BLOB"]
         processed_blob = os.environ["GCP_PROCESSED_BLOB"]
 
+        logging.info("🔹 Reading raw data from GCS...")
         df = read_csv_from_gcs(bucket, raw_blob)
 
         logging.info("🔹 Dropping duplicates & handling missing values...")
@@ -48,39 +47,30 @@ def preprocess_data():
 
         logging.info("🔹 Adding sentiment labels...")
         df["review_sentiment"] = df["star_rating"].apply(
-            lambda x: "negative" if x in [1, 2]
-            else "neutral" if x == 3
-            else "positive"
+            lambda x: "negative" if x in [1, 2] else "neutral" if x == 3 else "positive"
         )
 
-        sentiment_counts = Counter(df["review_sentiment"])
-        logging.info(f"🔹 Initial Sentiment Distribution: {sentiment_counts}")
+        logging.info(f"🔹 Initial Sentiment Distribution: {Counter(df['review_sentiment'])}")
 
-        if len(sentiment_counts) > 2 and max(sentiment_counts.values()) / min(sentiment_counts.values()) > 1.5:
+        if len(set(df["review_sentiment"])) > 2 and max(df["review_sentiment"].value_counts()) / min(df["review_sentiment"].value_counts()) > 1.5:
             logging.info("🔹 Applying SMOTE for class balancing...")
             smote = SMOTE(sampling_strategy="auto", random_state=42)
             X = df.drop(columns=["review_sentiment", "review_body", "product_category"])
             y = df["review_sentiment"]
-
             X_resampled, y_resampled = smote.fit_resample(X.select_dtypes(include=["number"]), y)
 
             df_resampled = pd.DataFrame(X_resampled, columns=X.select_dtypes(include=["number"]).columns)
             df_resampled["review_sentiment"] = y_resampled
-
-            logging.info("🔹 Merging back text columns for output...")
             df_text = df[["review_body", "product_category"]].iloc[:len(df_resampled)].reset_index(drop=True)
             df = pd.concat([df_resampled, df_text], axis=1)
 
-        # Upload directly to GCS without saving locally
-        logging.info(f"☁️ Uploading processed CSV to GCS: gs://{bucket}/{processed_blob}")
+        logging.info(f"☁️ Uploading processed data to GCS: gs://{bucket}/{processed_blob}")
         csv_buffer = StringIO()
         df.to_csv(csv_buffer, index=False)
-        blob_data = csv_buffer.getvalue().encode("utf-8")
-        upload_to_gcp(bucket, blob_data, processed_blob, from_memory=True)
+        upload_to_gcp(bucket, csv_buffer.getvalue().encode("utf-8"), processed_blob, from_memory=True)
 
         logging.info("✅ Preprocessing complete and uploaded to GCS.")
         logging.info(f"🔹 Final Sentiment Distribution: {Counter(df['review_sentiment'])}")
-
         return processed_blob
 
     except Exception as e:
