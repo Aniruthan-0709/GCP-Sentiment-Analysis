@@ -7,4 +7,5 @@ jinja2
 python-multipart
 pandas
 db-dtypes
+PyMuPDF==1.23.22
 
