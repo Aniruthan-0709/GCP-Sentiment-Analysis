@@ -4,7 +4,9 @@ import pandas as pd
 import os
 import logging
 import sys
+from io import StringIO
 from tensorflow_metadata.proto.v0 import statistics_pb2
+from utils.gcs_utils import read_csv_from_gcs, upload_to_gcp
 
 # Setup directories
 BASE_DIR = os.path.dirname(__file__)
@@ -24,15 +26,17 @@ logging.basicConfig(
     ]
 )
 
-# File paths
-PROCESSED_DATA_PATH = os.path.join(BASE_DIR, "data/processed/reviews.parquet")
+# GCS env
+GCP_BUCKET = os.environ["GCP_BUCKET"]
+GCP_PROCESSED_BLOB = os.environ["GCP_PROCESSED_BLOB"]
+
+# Local paths
 SCHEMA_PATH = os.path.join(VALIDATION_DIR, "schema.pbtxt")
 REFERENCE_STATS_PATH = os.path.join(VALIDATION_DIR, "reference_stats.tfrecord")
 NEW_STATS_PATH = os.path.join(VALIDATION_DIR, "new_stats.tfrecord")
 BIAS_REPORT_PATH = os.path.join(VALIDATION_DIR, "bias_report.txt")
 
 def load_statistics_from_tfrecord(path):
-    """Load statistics from TFRecord file."""
     dataset = tf.data.TFRecordDataset([path])
     for record in dataset:
         stats = statistics_pb2.DatasetFeatureStatisticsList()
@@ -41,34 +45,27 @@ def load_statistics_from_tfrecord(path):
     return None
 
 def save_statistics_as_tfrecord(stats, path):
-    """Save statistics as TFRecord."""
     with tf.io.TFRecordWriter(path) as writer:
         writer.write(stats.SerializeToString())
 
-def detect_bias(input_path=PROCESSED_DATA_PATH, schema_path=SCHEMA_PATH, reference_stats_path=REFERENCE_STATS_PATH):
-    """Detects dataset bias by comparing current and reference statistics."""
+def detect_bias(schema_path=SCHEMA_PATH, reference_stats_path=REFERENCE_STATS_PATH):
     try:
         if not os.path.exists(schema_path):
             logging.error(f"❌ Schema not found at: {schema_path}")
             return None
 
-        if not os.path.exists(input_path):
-            logging.error(f"❌ Processed dataset not found at: {input_path}")
-            return None
+        logging.info("🔹 Reading processed CSV from GCS...")
+        df = read_csv_from_gcs(GCP_BUCKET, GCP_PROCESSED_BLOB)
 
-        logging.info("🔹 Loading processed dataset...")
-        df = pd.read_parquet(input_path)
-
-        logging.info("🔹 Generating statistics for current dataset...")
+        logging.info("🔹 Generating current statistics...")
         new_stats = tfdv.generate_statistics_from_dataframe(df)
-
-        # Save current stats
         save_statistics_as_tfrecord(new_stats, NEW_STATS_PATH)
 
         drift_results = []
+        updated = False
 
         if os.path.exists(reference_stats_path):
-            logging.info("🔄 Reference statistics found. Comparing for drift...")
+            logging.info("🔍 Comparing with reference statistics...")
             reference_stats = load_statistics_from_tfrecord(reference_stats_path)
 
             for feature in new_stats.datasets[0].features:
@@ -82,17 +79,31 @@ def detect_bias(input_path=PROCESSED_DATA_PATH, schema_path=SCHEMA_PATH, referen
 
                     drift_results.append(f"{feature_name}: Old Mean = {old_mean:.3f}, New Mean = {new_mean:.3f}, Drift = {percent_drift:.2f}%")
 
-            # Save to text file
+                    if abs(percent_drift) > 50 and feature_name == "star_rating":
+                        logging.warning(f"⚠️ High drift in {feature_name}. Capping values to 1–5.")
+                        df[feature_name] = df[feature_name].clip(1, 5)
+                        updated = True
+
+            # Save report
             with open(BIAS_REPORT_PATH, "w", encoding="utf-8") as f:
                 f.write("📊 Bias Detection Report\n")
-                f.write("="*40 + "\n")
+                f.write("=" * 40 + "\n")
                 for entry in drift_results:
                     f.write(entry + "\n")
 
-            logging.info(f"📁 Drift report saved to: {BIAS_REPORT_PATH}")
+            logging.info(f"📁 Drift report saved at: {BIAS_REPORT_PATH}")
         else:
-            logging.warning("⚠️ No reference statistics found. Saving current stats as baseline.")
+            logging.warning("⚠️ No reference stats found. Saving current stats as baseline.")
             save_statistics_as_tfrecord(new_stats, reference_stats_path)
+
+        if updated:
+            logging.info("☁️ Uploading corrected CSV to GCS...")
+            csv_buffer = StringIO()
+            df.to_csv(csv_buffer, index=False)
+            upload_to_gcp(GCP_BUCKET, csv_buffer.getvalue().encode("utf-8"), GCP_PROCESSED_BLOB, from_memory=True)
+            logging.info(f"✅ Corrected file uploaded to gs://{GCP_BUCKET}/{GCP_PROCESSED_BLOB}")
+        else:
+            logging.info("✅ No bias corrections needed. No file upload performed.")
 
         logging.info("✅ Bias detection complete.")
         return BIAS_REPORT_PATH
