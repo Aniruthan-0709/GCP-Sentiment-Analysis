@@ -2,7 +2,7 @@ import os
 import logging
 import pandas as pd
 from io import StringIO
-from utils.gcp_utils import load_csv_from_gcs, upload_to_gcp
+from utils.gcs_utils import load_csv_from_gcs, upload_to_gcp
 
 # ========== Environment ==========
 gcs_bucket = os.getenv("GCP_BUCKET")
