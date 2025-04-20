@@ -13,6 +13,7 @@ jobs:
     env:
       GCP_BUCKET: ${{ secrets.GCP_BUCKET }}
       SOURCE_BLOB: ${{ secrets.SOURCE_BLOB }}
+      GCP_PROCESSED_BLOB: ${{ secrets.GCP_PROCESSED_BLOB }}  # ✅ Added here
 
     steps:
       - name: Checkout repository
@@ -55,9 +56,6 @@ jobs:
           pytest Data_Pipeline/unit_testing.py
 
       - name: ☁️ Upload Final Processed Data to GCP
-        env:
-          GCP_BUCKET: ${{ secrets.GCP_BUCKET }}
-          GCP_PROCESSED_BLOB: ${{ secrets.GCP_PROCESSED_BLOB }}
         run: python Data_Pipeline/final_upload.py
 
       - name: 📥 Commit logs, reports, and processed data to GitHub
