@@ -1,20 +1,17 @@
 import os
 import logging
 import pandas as pd
-from utils.gcs_utils import upload_to_gcp
+from utils.gcp_utils import load_csv_from_gcs, upload_to_gcs
+from io import BytesIO
 
-# Paths
-BASE_DIR = os.path.dirname(__file__)
-LOG_DIR = os.path.join(BASE_DIR, "logs")
-PARQUET_PATH = os.path.join(BASE_DIR, "data/processed/reviews.parquet")
-CSV_PATH = os.path.join(BASE_DIR, "data/processed/reviews.csv")
-
-# GCP environment variables
+# ========== Environment Variables ==========
 gcs_bucket = os.getenv("GCP_BUCKET")
-destination_blob = os.getenv("GCP_PROCESSED_BLOB")  # e.g., processed/reviews.csv
+gcs_blob = os.getenv("GCP_PROCESSED_BLOB")  # e.g., processed/reviews.csv
 
-# Setup logging
+# ========== Logging Setup ==========
+LOG_DIR = os.path.join(os.path.dirname(__file__), "logs")
 os.makedirs(LOG_DIR, exist_ok=True)
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
@@ -24,23 +21,24 @@ logging.basicConfig(
     ]
 )
 
+# ========== Upload Logic ==========
 def run_upload():
     try:
-        logging.info(f"🔍 Checking for processed file at: {PARQUET_PATH}")
-        if not os.path.exists(PARQUET_PATH):
-            nearby_files = os.listdir(os.path.dirname(PARQUET_PATH))
-            logging.error(f"❌ Processed file not found.\nContents of directory:\n{nearby_files}")
-            raise FileNotFoundError(f"Processed file not found: {PARQUET_PATH}")
+        logging.info(f"📥 Reading processed CSV from: gs://{gcs_bucket}/{gcs_blob}")
+        df = load_csv_from_gcs(gcs_bucket, gcs_blob)
 
-        # Convert to CSV
-        logging.info(f"🧪 Converting {PARQUET_PATH} to CSV...")
-        df = pd.read_parquet(PARQUET_PATH)
-        df.to_csv(CSV_PATH, index=False)
-        logging.info(f"✅ CSV saved at: {CSV_PATH}")
+        logging.info(f"✅ Data loaded. Rows: {len(df)}, Columns: {df.shape[1]}")
 
-        # Upload CSV to GCP
-        logging.info(f"☁️ Uploading {CSV_PATH} to gs://{gcs_bucket}/{destination_blob}")
-        upload_to_gcp(gcs_bucket, CSV_PATH, destination_blob)
+        # Perform optional transformation (identity in this case)
+        # e.g., df = df[df["star_rating"] > 1]
+
+        # Save to in-memory CSV
+        buffer = BytesIO()
+        df.to_csv(buffer, index=False)
+        buffer.seek(0)
+
+        logging.info(f"☁️ Uploading updated CSV back to: gs://{gcs_bucket}/{gcs_blob}")
+        upload_to_gcs(gcs_bucket, buffer, gcs_blob, is_fileobj=True)
         logging.info("✅ Upload complete.")
 
     except Exception as e:
